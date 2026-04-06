@@ -1,0 +1,54 @@
+<?php
+$form->prepare();
+
+echo $this->partial('layout/header');
+?>
+
+<div class="container" style="max-width: 420px; margin: 60px auto;">
+    <h1 style="margin-bottom: 24px;">Login</h1>
+
+    <?php if ($this->flashMessenger()->hasErrorMessages()): ?>
+        <div style="background: #f8d7da; color: #842029; padding: 12px; border-radius: 8px; margin-bottom: 16px;">
+            <?php foreach ($this->flashMessenger()->getErrorMessages() as $message): ?>
+                <div><?= $this->escapeHtml($message) ?></div>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
+
+    <form method="post">
+        <?= $this->formHidden($form->get('csrf')) ?>
+
+        <div style="margin-bottom: 16px;">
+            <label for="email">E-mail</label>
+            <input 
+                type="email"
+                name="email"
+                id="email"
+                required
+                style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px;"
+            >
+        </div>
+
+        <div style="margin-bottom: 16px;">
+            <label for="password">Senha</label>
+            <input 
+                type="password"
+                name="password"
+                id="password"
+                required
+                style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px;"
+            >
+        </div>
+
+        <button
+            type="submit"
+            style="width: 100%; padding: 12px; border: 0; border-radius: 8px; background: #1d4ed8; color: #fff; cursor: pointer;"
+        >
+            Entrar
+        </button>
+    </form>
+</div>
+
+<?php
+echo $this->partial('layout/footer');
+?>

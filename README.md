@@ -24,7 +24,7 @@ Antes de começar, você precisa ter instalado:
 ## Clonando o projeto
 
 ```bash
-git clone URL_DO_REPOSITORIO
+git clone https://github.com/JaoJaoGo/mini-erp-laminas.git
 cd mini-erp-laminas
 ```
 

@@ -10,12 +10,14 @@ RUN apt-get update
 
 RUN a2enmod rewrite \
     && sed -i 's!/var/www/html!/var/www/public!g' /etc/apache2/sites-available/000-default.conf \
-    && mv /var/www/html /var/www/public
+    && printf '<Directory /var/www/public>\n\
+    AllowOverride All\n\
+    Require all granted\n\
+</Directory>\n' >> /etc/apache2/apache2.conf
 
 RUN curl -sS https://getcomposer.org/installer \
   | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Dependências e extensões principais
 RUN apt-get install --yes \
     git \
     unzip \
@@ -23,12 +25,11 @@ RUN apt-get install --yes \
     libzip-dev \
     libicu-dev \
     libxml2-dev \
+    libzstd-dev \
     && docker-php-ext-install zip intl pdo_mysql xml
 
-# Redis
 RUN pecl install igbinary \
     && docker-php-ext-enable igbinary \
-    && apt-get install --yes libzstd-dev \
     && pecl install redis \
     && docker-php-ext-enable redis
 

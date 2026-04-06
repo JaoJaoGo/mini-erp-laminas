@@ -1,0 +1,36 @@
+<?php
+/** @var \Application\Entity\User|null $user */
+$user = $this->user ?? null;
+?>
+
+<header style="background: #111827; color: #fff; padding: 16px 24px; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);">
+    <div style="max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 16px;">
+        <div>
+            <a
+                href="<?= $this->url('home') ?>"
+                style="color: #fff; text-decoration: none; font-size: 20px; font-weight: 700; letter-spacing: 0.5px;"
+            >
+                Mini ERP Laminas
+            </a>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 16px;">
+            <?php if ($user): ?>
+                <div style="font-size: 14px; color: #d1d5db;">
+                    Olá, <strong style="color: #fff;"><?= $this->escapeHtml($user->getName()) ?></strong>
+                </div>
+
+                <a
+                    href="<?= $this->url('logout') ?>"
+                    style="background: #dc2626; color: #fff; text-decoration: none; padding: 10px 16px; border-radius: 8px; font-size: 14px; font-weight: 600;"
+                >
+                    Sair
+                </a>
+            <?php else: ?>
+                <div style="font-size: 14px; color: #d1d5db;">
+                    Sistema de gestão para estudo com Laminas MVC e Doctrine ORM
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
+</header>

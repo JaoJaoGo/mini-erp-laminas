@@ -1,0 +1,46 @@
+<?php
+/** @var \Application\Entity\User|null $user */
+$user = $this->user;
+
+echo $this->partial('layout/header', [
+    'user' => $user,
+]);
+?>
+
+<main style="max-width: 1200px; margin: 40px auto; padding: 0 24px;">
+    <div style="background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 32px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);">
+        <h1 style="margin: 0 0 12px; font-size: 32px; color: #111827;">
+            Dashboard
+        </h1>
+
+        <p style="margin: 0 0 24px; color: #6b7280; font-size: 16px;">
+            Bem-vindo ao Mini ERP Laminas.
+        </p>
+
+        <?php if ($user): ?>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
+                <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 20px;">
+                    <div style="font-size: 13px; color: #1d4ed8; margin-bottom: 8px; text-transform: uppercase; font-weight: 700;">
+                        Usuário logado
+                    </div>
+                    <div style="font-size: 20px; font-weight: 700; color: #111827;">
+                        <?= $this->escapeHtml($user->getName()) ?>
+                    </div>
+                </div>
+
+                <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px;">
+                    <div style="font-size: 13px; color: #6b7280; margin-bottom: 8px; text-transform: uppercase; font-weight: 700;">
+                        E-mail
+                    </div>
+                    <div style="font-size: 16px; font-weight: 600; color: #111827;">
+                        <?= $this->escapeHtml($user->getEmail()) ?>
+                    </div>
+                </div>
+            </div>
+        <?php endif; ?>
+    </div>
+</main>
+
+<?php
+echo $this->partial('layout/footer');
+?>
