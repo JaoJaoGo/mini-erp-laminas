@@ -1,164 +1,17 @@
-# Mini ERP Laminas
+# Documentação do Mini ERP Laminas
 
-Projeto de estudo utilizando Laminas MVC + Doctrine ORM + MySQL.
+Bem-vindo à documentação do Mini ERP Laminas. Este conjunto de documentos descreve a arquitetura, instalação, modelo de dados e fluxo de desenvolvimento do projeto.
 
-O objetivo é construir um mini ERP simples com autenticação, categorias, produtos e pedidos, servindo como laboratório para aprender Laminas, Doctrine, arquitetura MVC e relacionamentos entre entidades.
+## Conteúdo
 
-## Stack
+- `document/getting-started.md` — Instalação, execução e configuração do ambiente.
+- `document/application-overview.md` — Visão geral da aplicação, recursos, rotas e comportamento.
+- `document/database-model.md` — Modelo de dados, entidades e configuração do Doctrine.
+- `document/development-guide.md` — Comandos de desenvolvimento, testes e recomendações.
 
-* PHP 8.3
-* Laminas MVC
-* Doctrine ORM
-* MySQL 8
-* Docker + Docker Compose
-* Apache
+## Como usar esta documentação
 
-## Requisitos
-
-Antes de começar, você precisa ter instalado:
-
-* Docker
-* Docker Compose
-* Git
-
-## Clonando o projeto
-
-```bash
-git clone https://github.com/JaoJaoGo/mini-erp-laminas.git
-cd mini-erp-laminas
-```
-
-## Subindo o ambiente
-
-Suba os containers:
-
-```bash
-docker compose up --build -d
-```
-
-Verifique se os containers estão rodando:
-
-```bash
-docker compose ps
-```
-
-## Entrando no container da aplicação
-
-```bash
-docker compose exec laminas bash
-```
-
-## Instalando as dependências do projeto
-
-Dentro do container:
-
-```bash
-composer install
-```
-
-Caso seja a primeira vez rodando o projeto, instale também os pacotes principais:
-
-```bash
-composer require doctrine/doctrine-orm-module
-composer require laminas/laminas-db laminas/laminas-form laminas/laminas-session
-```
-
-## Configuração do banco
-
-O projeto utiliza MySQL via Docker.
-
-Credenciais padrão:
-
-```txt
-Host: mysql
-Port: 3306
-Database: mini_erp_laminas
-User: laminas
-Password: laminas
-```
-
-Para acesso externo pelo DBeaver:
-
-```txt
-Host: 127.0.0.1
-Port: 3307
-Database: mini_erp_laminas
-User: laminas
-Password: laminas
-```
-
-## Criando o banco e tabelas
-
-Dentro do container da aplicação:
-
-```bash
-php vendor/bin/doctrine-module orm:info
-php vendor/bin/doctrine-module orm:schema-tool:update --dump-sql
-php vendor/bin/doctrine-module orm:schema-tool:update --force
-```
-
-## Rodando o projeto
-
-A aplicação ficará disponível em:
-
-```txt
-http://localhost:8080
-```
-
-## Estrutura principal
-
-```txt
-module/Application/src/Controller
-module/Application/src/Entity
-module/Application/src/Form
-module/Application/src/Service
-module/Application/view/application
-config/autoload
-```
-
-## Resetando completamente o ambiente
-
-Caso precise apagar o banco e recriar tudo:
-
-```bash
-docker compose down -v
-docker compose up --build -d
-```
-
-## Comandos úteis
-
-Entrar no container:
-
-```bash
-docker compose exec laminas bash
-```
-
-Ver logs:
-
-```bash
-docker compose logs -f
-```
-
-Ver logs apenas do MySQL:
-
-```bash
-docker compose logs mysql
-```
-
-Ver logs apenas da aplicação:
-
-```bash
-docker compose logs laminas
-```
-
-Parar containers:
-
-```bash
-docker compose down
-```
-
-Parar containers e apagar volumes:
-
-```bash
-docker compose down -v
-```
+1. Leia `getting-started.md` para configurar o projeto localmente ou em Docker.
+2. Consulte `application-overview.md` para entender os recursos implementados e as rotas do sistema.
+3. Veja `database-model.md` para compreender o esquema de banco de dados e os relacionamentos.
+4. Use `development-guide.md` para executar testes, análise estática e manter o código.

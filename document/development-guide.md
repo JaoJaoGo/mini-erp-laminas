@@ -1,0 +1,186 @@
+# Guia de Desenvolvimento
+
+## Estrutura do projeto
+
+```
+mini-erp-laminas/
+├── bin/                    # Scripts utilitários
+├── config/                 # Configurações Laminas e Doctrine
+├── data/                   # Cache e proxies Doctrine
+├── document/               # Documentação (este arquivo)
+├── module/Application/     # Módulo principal
+│   ├── config/             # Configuração de rotas e serviços
+│   ├── src/                # Código fonte
+│   │   ├── Controller/     # Controladores
+│   │   ├── Entity/         # Entidades Doctrine
+│   │   ├── Form/           # Formulários
+│   │   ├── Service/        # Serviços de negócio
+│   │   └── Module.php      # Bootstrap do módulo
+│   ├── test/               # Testes unitários
+│   └── view/               # Templates
+├── public/                 # Document root
+├── vendor/                 # Dependências Composer
+├── composer.json           # Configuração Composer
+├── docker-compose.yml      # Ambiente Docker
+├── Dockerfile              # Imagem da aplicação
+├── phpunit.xml.dist        # Configuração PHPUnit
+├── psalm.xml               # Configuração Psalm
+└── phpcs.xml               # Configuração PHP CodeSniffer
+```
+
+## Dependências principais
+
+- **PHP 8.3** — Linguagem base.
+- **Laminas MVC** — Framework web.
+- **Doctrine ORM** — Mapeamento objeto-relacional.
+- **MySQL 8** — Banco de dados.
+- **Docker** — Ambiente de desenvolvimento.
+
+## Comandos de desenvolvimento
+
+### Composer
+
+- Instalar dependências: `composer install`
+- Atualizar dependências: `composer update`
+- Limpar cache de configuração: `composer clear-config-cache`
+- Verificar código: `composer cs-check`
+- Corrigir código: `composer cs-fix`
+- Executar testes: `composer test`
+- Análise estática: `composer static-analysis`
+
+### Doctrine
+
+- Verificar status: `php vendor/bin/doctrine-module orm:info`
+- Gerar SQL: `php vendor/bin/doctrine-module orm:schema-tool:update --dump-sql`
+- Aplicar schema: `php vendor/bin/doctrine-module orm:schema-tool:update --force`
+- Limpar cache: `php vendor/bin/doctrine-module orm:clear-cache:metadata`
+
+### PHPUnit
+
+- Executar todos os testes: `vendor/bin/phpunit`
+- Executar testes específicos: `vendor/bin/phpunit --filter TestClass`
+- Cobertura de código: `vendor/bin/phpunit --coverage-html coverage/`
+
+### Psalm
+
+- Análise estática: `vendor/bin/psalm`
+- Análise com estatísticas: `vendor/bin/psalm --stats`
+
+### PHP CodeSniffer
+
+- Verificar código: `vendor/bin/phpcs`
+- Corrigir automaticamente: `vendor/bin/phpcbf`
+
+## Testes
+
+### Estrutura de testes
+
+- `module/Application/test/ModuleTest.php` — Testa configuração do módulo.
+- `module/Application/test/Controller/IndexControllerTest.php` — Testa controlador principal.
+
+### Executando testes
+
+```bash
+composer test
+# ou
+vendor/bin/phpunit
+```
+
+## Análise estática
+
+```bash
+composer static-analysis
+# ou
+vendor/bin/psalm
+```
+
+## Padrões de código
+
+### PHP CodeSniffer
+
+O projeto usa PSR-12 como padrão de código. Verifique com:
+
+```bash
+composer cs-check
+```
+
+Para correção automática:
+
+```bash
+composer cs-fix
+```
+
+### Estrutura de commits
+
+Use mensagens descritivas em português ou inglês. Exemplos:
+
+- `feat: adicionar validação de email no login`
+- `fix: corrigir bug na listagem de produtos`
+- `docs: atualizar documentação de instalação`
+
+## Desenvolvimento local
+
+### Sem Docker
+
+1. Instale PHP 8.3 e MySQL.
+2. Configure banco de dados local.
+3. Execute `composer install`.
+4. Configure `config/autoload/local.php` com credenciais locais.
+5. Execute `composer serve` para servidor embutido.
+
+### Com Docker
+
+1. `docker compose up --build -d`
+2. `docker compose exec laminas bash`
+3. `composer install`
+4. Configure Doctrine para usar `mysql` como host.
+
+## Debugging
+
+### Logs
+
+- Logs da aplicação: `docker compose logs -f laminas`
+- Logs do MySQL: `docker compose logs -f mysql`
+
+### Cache
+
+Limpe caches quando houver problemas de configuração:
+
+```bash
+composer clear-config-cache
+php vendor/bin/doctrine-module orm:clear-cache:metadata
+```
+
+### Sessão
+
+A sessão é armazenada em `Laminas\Session\Container` com chave `auth`. Para depurar:
+
+```php
+$session = new Container('auth');
+var_dump($session->getArrayCopy());
+```
+
+## Extensões recomendadas
+
+Para desenvolvimento em VS Code:
+
+- PHP Extension Pack
+- Docker
+- GitLens
+- PHPUnit Test Explorer
+
+## Considerações de segurança
+
+- Senhas são hasheadas com `password_hash()` e verificadas com `password_verify()`.
+- Formulários incluem token CSRF.
+- Sessão é limpa no logout.
+- Rotas privadas são protegidas por middleware.
+
+## Próximas melhorias
+
+- Implementar cadastro de usuários.
+- Adicionar paginação nas listagens.
+- Implementar soft delete.
+- Adicionar logs de auditoria.
+- Melhorar validações e tratamento de erros.
+- Adicionar testes funcionais e de integração.
