@@ -2,12 +2,17 @@
 /** @var \Application\Entity\User|null $user */
 $user = $this->user;
 
+$totalCategories = (int) ($this->totalCategories ?? 0);
+$totalProducts = (int) ($this->totalProducts ?? 0);
+
 echo $this->partial('layout/header', [
     'user' => $user,
 ]);
 
 echo $this->partial('application/home/modules/dashboards', [
     'user' => $user,
+    'totalCategories' => $totalCategories,
+    'totalProducts' => $totalProducts,
 ]);
 
 echo $this->partial('application/home/modules/menu');

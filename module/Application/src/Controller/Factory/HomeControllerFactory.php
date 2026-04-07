@@ -6,6 +6,7 @@ namespace Application\Controller\Factory;
 
 use Application\Controller\HomeController;
 use Application\Service\AuthService;
+use Doctrine\ORM\EntityManager;
 use Psr\Container\ContainerInterface;
 
 class HomeControllerFactory
@@ -14,6 +15,7 @@ class HomeControllerFactory
     {
         return new HomeController(
             $container->get(AuthService::class),
+            $container->get(EntityManager::class),
         );
     }
 }
