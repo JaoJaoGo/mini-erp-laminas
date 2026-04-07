@@ -22,12 +22,18 @@ class ProductController extends AbstractActionController
 
     public function indexAction(): viewModel
     {
-        $name = trim((string) $this->params()->fromQuery('name', '')).
+        $name = trim((string) $this->params()->fromQuery('name', ''));
         $categoryFilter = trim((string) $this->params()->fromQuery('category', ''));
 
         $repository = $this->entityManager->getRepository(Product::class);
-        $qb = $repository->createQueryBuilder('p')->leftJoin('p.category', 'c')->addSelect('c')->orderBy('p.id', 'DESC');
 
+        $qb = $repository
+            ->createQueryBuilder('p')
+            ->leftJoin('p.categories', 'c')
+            ->addSelect('c')
+            ->orderBy('p.id', 'DESC')
+            ->distinct();
+        
         if ($name !== '') {
             $qb->andWhere('p.name LIKE :name')->setParameter('name', '%' . $name . '%');
         }
@@ -51,7 +57,7 @@ class ProductController extends AbstractActionController
     public function createAction(): viewModel|Response
     {
         $request = $this->getRequest();
-        $categories = $this->getCategoriesForForm();
+        $categories = $this->getCategoryForForm();
 
         if (!$request instanceof Request || !$request->isPost()) {
             return (new ViewModel([
@@ -65,7 +71,7 @@ class ProductController extends AbstractActionController
                     'price' => '',
                     'stock' => '0',
                     'isActive' => '1',
-                    'category' => '',
+                    'categories' => [],
                 ],
             ]))->setTemplate('application/product/form');
         }
@@ -85,12 +91,10 @@ class ProductController extends AbstractActionController
                     'price' => (string) ($data['price'] ?? ''),
                     'stock' => (string) ($data['stock' ?? '0']),
                     'isActive' => (string) ($data['isActive'] ?? '1'),
-                    'category' => (string) ($data['category'] ?? ''),
+                    'categories' => $this->normalizeCategoryIds($data['categories'] ?? []),
                 ],
             ]))->setTemplate('application/product/form');
         }
-
-        $category = $this->findCategoryFromData($data);
 
         $product = new Product();
         $product->setName((string) $data['name']);
@@ -98,7 +102,10 @@ class ProductController extends AbstractActionController
         $product->setPrice($this->normalizeMoneyValue((string) $data['price']));
         $product->setStock((int) ($data['stock'] ?? 0));
         $product->setIsActive(((string) ($data['isActive'] ?? '1')) === '1');
-        $product->setCategory($category);
+
+        foreach ($this->findCategoriesFromData($data) as $category) {
+            $product->addCategory($category);
+        }
 
         $this->entityManager->persist($product);
         $this->entityManager->flush();
@@ -106,9 +113,10 @@ class ProductController extends AbstractActionController
         return $this->redirect()->toRoute('product');
     }
 
+    // TODO: Adicionar funcionalidade de remover categorias do produto (e não apenas adicionar mais)
     public function editAction(): ViewModel|Response
     {
-        $id = $this->params()->fromRoute('id', 0);
+        $id = (int) $this->params()->fromRoute('id', 0);
 
         /** @var Product|null $product */
         $product = $this->entityManager->find(Product::class, $id);
@@ -118,9 +126,14 @@ class ProductController extends AbstractActionController
         }
 
         $request = $this->getRequest();
-        $categories = $this->getCategoriesForForm();
+        $categories = $this->getCategoryForForm();
 
         if (!$request instanceof Request || !$request->isPost()) {
+            $selectedCategories = array_map(
+                static fn (Category $category): string => (string) $category->getId(),
+                $product->getCategory()->toArray()
+            );
+
             return (new ViewModel([
                 'user' => $this->authService->getAuthenticatedUser(),
                 'product' => $product,
@@ -132,9 +145,7 @@ class ProductController extends AbstractActionController
                     'price' => (string) $product->getPrice(),
                     'stock' => (string) $product->getStock(),
                     'isActive' => $product->isActive() ? '1' : '0',
-                    'category' => $product->getCategory()?->getId() !== null
-                        ? (string) $product->getCategory()?->getId()
-                        : '',
+                    'categories' => $selectedCategories,
                 ],
             ]))->setTemplate('application/product/form');
         }
@@ -154,19 +165,20 @@ class ProductController extends AbstractActionController
                     'price' => (string) ($data['price'] ?? ''),
                     'stock' => (string) ($data['stock'] ?? '0'),
                     'isActive' => (string) ($data['isActive'] ?? '1'),
-                    'category' => (string) ($data['category'] ?? ''),
+                    'categories' => $this->normalizeCategoryIds($data['categories'] ?? []),
                 ],
             ]))->setTemplate('application/product/form');
         }
-
-        $category = $this->findCategoryFromData($data);
 
         $product->setName((string) $data['name']);
         $product->setDescription($data['description'] ?? null);
         $product->setPrice($this->normalizeMoneyValue((string) $data['price']));
         $product->setStock((int) ($data['stock'] ?? 0));
         $product->setIsActive(((string) ($data['isActive'] ?? '1')) === '1');
-        $product->setCategory($category);
+
+        foreach($this->findCategoriesFromData($data) as $category) {
+            $product->addCategory($category);
+        }
 
         $this->entityManager->flush();
 
@@ -195,7 +207,7 @@ class ProductController extends AbstractActionController
         $name = trim((string) ($data['name'] ?? ''));
         $price = trim((string) ($data['price'] ?? ''));
         $stock = trim((string) ($data['stock'] ?? '0'));
-        $categoryId = trim((string) ($data['category'] ?? ''));
+        $categoryIds = $this->normalizeCategoryIds($data['categories'] ?? []);
 
         if ($name === '') {
             $errors[] = 'O nome do produto é obrigatório.';
@@ -219,11 +231,12 @@ class ProductController extends AbstractActionController
             $errors[] = 'O estoque não pode ser negativo.';
         }
 
-        if ($categoryId !== '') {
+        foreach ($categoryIds as $categoryId) {
             $category = $this->entityManager->find(Category::class, (int) $categoryId);
 
-            if (! $category instanceof Category) {
-                $errors[] = 'A categoria selecionada é inválida.';
+            if (!$category instanceof Category) {
+                $errors[] = "Uma das categorias selecionadas é inválida.";
+                break;
             }
         }
 
@@ -233,7 +246,7 @@ class ProductController extends AbstractActionController
     /**
      * @return array<int, Category>
      */
-    private function getCategoriesForForm(): array
+    private function getCategoryForForm(): array
     {
         return $this->entityManager
             ->getRepository(Category::class)
@@ -243,17 +256,46 @@ class ProductController extends AbstractActionController
             ->getResult();
     }
 
-    private function findCategoryFromData(array $data): ?Category
+    /**
+     * @return array<int, string>
+     */
+    private function normalizeCategoryIds(mixed $categoryIds): array
     {
-        $categoryId = (int) ($data['category'] ?? 0);
-
-        if ($categoryId <= 0) {
-            return null;
+        if (!is_array($categoryIds)) {
+            return [];
         }
 
-        $category = $this->entityManager->find(Category::class, $categoryId);
+        $normalized = [];
 
-        return $category instanceof Category ? $category : null;
+        foreach ($categoryIds as $categoryId) {
+            $categoryId = trim((string) $categoryId);
+
+            if ($categoryId === '' || !ctype_digit($categoryId)) {
+                continue;
+            }
+
+            $normalized[] = $categoryId;
+        }
+
+        return array_values(array_unique($normalized));
+    }
+
+    /**
+     * @return array<int, Category>
+     */
+    private function findCategoriesFromData(array $data): array
+    {
+        $categories = [];
+
+        foreach ($this->normalizeCategoryIds($data['categories'] ?? []) as $categoryId) {
+            $category = $this->entityManager->find(Category::class, (int) $categoryId);
+
+            if ($category instanceof Category) {
+                $categories[] = $category;
+            }
+        }
+
+        return $categories;
     }
 
     private function normalizeMoneyValue(string $value): string

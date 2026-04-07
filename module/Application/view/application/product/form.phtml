@@ -25,7 +25,17 @@ $description = (string) ($formData['description'] ?? $product?->getDescription()
 $price = (string) ($formData['price'] ?? ($product ? (string) $product->getPrice() : ''));
 $stock = (string) ($formData['stock'] ?? ($product ? (string) $product->getStock() : '0'));
 $isActive = (string) ($formData['isActive'] ?? ($product ? ($product->isActive() ? '1' : '0') : '1'));
-$selectedCategory = (string) ($formData['category'] ?? ($product?->getCategory()?->getId() ? (string) $product->getCategory()?->getId() : ''));
+$selectedCategories = $formData['categories'] ?? [];
+
+if (! is_array($selectedCategories)) {
+    $selectedCategories = [];
+}
+
+$categoriesMap = [];
+
+foreach ($categories as $category) {
+    $categoriesMap[(string) $category->getId()] = $category->getName();
+}
 
 echo $this->partial('layout/header', [
     'user' => $user,
@@ -57,7 +67,7 @@ echo $this->partial('layout/header', [
     </div>
 
     <div style="background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 32px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);">
-        <?php if (!empty($errors)): ?>
+        <?php if (! empty($errors)): ?>
             <div style="margin-bottom: 24px; padding: 16px; border-radius: 8px; background: #fee2e2; color: #991b1b; border: 1px solid #fecaca;">
                 <strong style="display: block; margin-bottom: 8px;">Corrija os erros abaixo:</strong>
 
@@ -104,7 +114,7 @@ echo $this->partial('layout/header', [
 
                 <div>
                     <label
-                        for="category"
+                        for="category-selector"
                         style="
                             display: block;
                             margin-bottom: 8px;
@@ -113,12 +123,11 @@ echo $this->partial('layout/header', [
                             color: #374151;
                         "
                     >
-                        Categoria
+                        Categorias
                     </label>
 
                     <select
-                        name="category"
-                        id="category"
+                        id="category-selector"
                         style="
                             width: 100%;
                             padding: 12px 14px;
@@ -131,14 +140,69 @@ echo $this->partial('layout/header', [
                         <option value="">Selecione uma categoria</option>
 
                         <?php foreach ($categories as $category): ?>
-                            <option
-                                value="<?= $this->escapeHtmlAttr((string) $category->getId()) ?>"
-                                <?= $selectedCategory === (string) $category->getId() ? 'selected' : '' ?>
-                            >
+                            <option value="<?= $this->escapeHtmlAttr((string) $category->getId()) ?>">
                                 <?= $this->escapeHtml($category->getName()) ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
+
+                    <div
+                        id="selected-categories"
+                        style="
+                            margin-top: 12px;
+                            display: flex;
+                            flex-wrap: wrap;
+                            gap: 10px;
+                        "
+                    >
+                        <?php foreach ($selectedCategories as $categoryId): ?>
+                            <?php
+                            $categoryId = (string) $categoryId;
+                            $categoryName = $categoriesMap[$categoryId] ?? null;
+                            if ($categoryName === null) {
+                                continue;
+                            }
+                            ?>
+                            <div
+                                class="selected-category-item"
+                                data-category-id="<?= $this->escapeHtmlAttr($categoryId) ?>"
+                                style="
+                                    display: inline-flex;
+                                    align-items: center;
+                                    gap: 10px;
+                                    padding: 10px 12px;
+                                    border-radius: 999px;
+                                    background: #eff6ff;
+                                    border: 1px solid #bfdbfe;
+                                    color: #1e3a8a;
+                                    font-size: 14px;
+                                    font-weight: 600;
+                                "
+                            >
+                                <span><?= $this->escapeHtml($categoryName) ?></span>
+
+                                <button
+                                    type="button"
+                                    class="remove-category-button"
+                                    style="
+                                        width: 24px;
+                                        height: 24px;
+                                        border: 0;
+                                        border-radius: 999px;
+                                        background: #dbeafe;
+                                        color: #1d4ed8;
+                                        font-weight: 700;
+                                        cursor: pointer;
+                                        line-height: 1;
+                                    "
+                                >
+                                    ×
+                                </button>
+
+                                <input type="hidden" name="categories[]" value="<?= $this->escapeHtmlAttr($categoryId) ?>">
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
                 </div>
 
                 <div>
@@ -304,5 +368,93 @@ echo $this->partial('layout/header', [
         </form>
     </div>
 </main>
+
+<script>
+    (function () {
+        const selector = document.getElementById('category-selector');
+        const container = document.getElementById('selected-categories');
+
+        if (!selector || !container) {
+            return;
+        }
+
+        function hasCategory(categoryId) {
+            return container.querySelector('[data-category-id="' + CSS.escape(categoryId) + '"]') !== null;
+        }
+
+        function bindRemove(button) {
+            button.addEventListener('click', function () {
+                const item = button.closest('.selected-category-item');
+
+                if (item) {
+                    item.remove();
+                }
+            });
+        }
+
+        function createCategoryItem(categoryId, categoryName) {
+            const item = document.createElement('div');
+            item.className = 'selected-category-item';
+            item.setAttribute('data-category-id', categoryId);
+            item.style.display = 'inline-flex';
+            item.style.alignItems = 'center';
+            item.style.gap = '10px';
+            item.style.padding = '10px 12px';
+            item.style.borderRadius = '999px';
+            item.style.background = '#eff6ff';
+            item.style.border = '1px solid #bfdbfe';
+            item.style.color = '#1e3a8a';
+            item.style.fontSize = '14px';
+            item.style.fontWeight = '600';
+
+            const label = document.createElement('span');
+            label.textContent = categoryName;
+
+            const removeButton = document.createElement('button');
+            removeButton.type = 'button';
+            removeButton.className = 'remove-category-button';
+            removeButton.textContent = '×';
+            removeButton.style.width = '24px';
+            removeButton.style.height = '24px';
+            removeButton.style.border = '0';
+            removeButton.style.borderRadius = '999px';
+            removeButton.style.background = '#dbeafe';
+            removeButton.style.color = '#1d4ed8';
+            removeButton.style.fontWeight = '700';
+            removeButton.style.cursor = 'pointer';
+            removeButton.style.lineHeight = '1';
+
+            const hidden = document.createElement('input');
+            hidden.type = 'hidden';
+            hidden.name = 'categories[]';
+            hidden.value = categoryId;
+
+            item.appendChild(label);
+            item.appendChild(removeButton);
+            item.appendChild(hidden);
+
+            bindRemove(removeButton);
+
+            return item;
+        }
+
+        container.querySelectorAll('.remove-category-button').forEach(bindRemove);
+
+        selector.addEventListener('change', function () {
+            const categoryId = selector.value;
+            const categoryName = selector.options[selector.selectedIndex]?.text ?? '';
+
+            if (!categoryId) {
+                return;
+            }
+
+            if (!hasCategory(categoryId)) {
+                container.appendChild(createCategoryItem(categoryId, categoryName));
+            }
+
+            selector.value = '';
+        });
+    })();
+</script>
 
 <?= $this->partial('layout/footer') ?>

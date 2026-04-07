@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Application\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -19,7 +21,7 @@ use Doctrine\ORM\Mapping as ORM;
  * - isActive: Indica se o produto está ativo (booleano, padrão true).
  * - createdAt: Data e hora de criação do produto (DateTimeImmutable).
  * - updatedAt: Data e hora da última atualização do produto (DateTimeImmutable).
- * - category: Categoria à qual o produto pertence (ManyToOne).
+ * - category: Categoria à qual o produto pertence (ManyToMany).
  * 
  * Métodos:
  * - getId(): Retorna o ID do produto.
@@ -36,7 +38,9 @@ use Doctrine\ORM\Mapping as ORM;
  * - getCreatedAt(): Retorna a data de criação do produto.
  * - getUpdatedAt(): Retorna a data da última atualização do produto.
  * - getCategory(): Retorna a categoria do produto.
- * - setCategory(?Category $category): Define a categoria do produto.
+ * - addCategory(Category $category): Adiciona uma categoria ao produto.
+ * - removeCategory(Category $category): remove uma categoria ao produto.
+ * - clearCategory(): Remove todas as categorias do produto
  * 
  * Observações:
  * - A classe utiliza anotações do Doctrine ORM para mapear a entidade e suas propriedades para o banco de dados.
@@ -48,7 +52,7 @@ use Doctrine\ORM\Mapping as ORM;
  * 
  * @package Application\Entity
  * @author João Víctor Guedes Carrijo <jvgcarrijo@gmail.com>
- * @version 1.0
+ * @version 2.0
  * @since 2024-04-06
  * @see Category
  * 
@@ -87,9 +91,16 @@ class Product
     #[ORM\Column(type: 'datetime_immutable')]
     private \DateTimeImmutable $updatedAt;
 
-    #[ORM\ManyToOne(targetEntity: Category::class, inversedBy: 'products')]
-    #[ORM\JoinColumn(name: 'category_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
-    private ?Category $category = null;
+    #[ORM\ManyToMany(targetEntity: Category::class, inversedBy: 'products')]
+    #[ORM\JoinTable(name: 'product_categories')]
+    #[ORM\JoinColumn(name: 'product_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
+    #[ORM\InverseJoinColumn(name: 'category_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
+    private Collection $categories;
+
+    public function __construct()
+    {
+        $this->categories = new ArrayCollection();
+    }
 
     #[ORM\PrePersist]
     public function onPrePersist(): void
@@ -177,13 +188,31 @@ class Product
         return $this->updatedAt;
     }
 
-    public function getCategory(): ?Category
+    /**
+     * @return Collection<int, Category>
+     */
+    public function getCategory(): Collection
     {
-        return $this->category;
+        return $this->categories;
     }
-    public function setCategory(?Category $category): self
+    public function addCategory(Category $category): self
     {
-        $this->category = $category;
+        if (!$this->categories->contains($category)) {
+            $this->categories->add($category);
+        }
+
+        return $this;
+    }
+    public function removeCategory(Category $category): self
+    {
+        $this->categories->removeElement($category);
+
+        return $this;
+    }
+
+    public function clearCategories(): self
+    {
+        $this->categories->clear();
 
         return $this;
     }

@@ -77,11 +77,11 @@ A aplicação não fornece cadastro de usuários pela interface. É necessário 
 Um exemplo de inserção usando SQL:
 
 ```sql
-INSERT INTO users (name, email, password, is_active, created_at, updated_at)
+INSERT INTO users (name, email, password, isActive, createdAt, updatedAt)
 VALUES ('Admin', 'admin@example.com', '<hash_da_senha>', 1, NOW(), NOW());
 ```
 
-Use `password_hash('sua_senha', PASSWORD_DEFAULT)` em PHP para gerar o valor de `<hash_da_senha>`.
+Use `php -r "echo password_hash('123456', PASSWORD_DEFAULT) . PHP_EOL;"` em PHP para gerar o valor de `<hash_da_senha>`.
 
 ## Executando a aplicação
 

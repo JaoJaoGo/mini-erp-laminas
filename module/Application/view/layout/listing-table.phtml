@@ -10,7 +10,7 @@ declare(strict_types=1);
  */
 ?>
 
-<div style="overflow-x: auto; background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);">
+<div style="overflow-x: auto; background: #fff; margin: 20px; border: 1px solid #e5e7eb; border-radius: 16px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);">
     <table style="width: 100%; border-collapse: collapse; min-width: 760px;">
         <thead>
             <tr style="background: #f9fafb;">
@@ -52,9 +52,69 @@ declare(strict_types=1);
                             <td style="padding: 16px; color: #111827; vertical-align: middle;">
                                 <?php
                                 $value = $row[$column['key']] ?? '';
+                                $type = $column['type'] ?? null;
 
-                                if (($column['type'] ?? null) === 'html') {
+                                if ($type === 'html') {
                                     echo $value;
+                                } elseif ($type === 'badges-fade') {
+                                    $items = is_array($value) ? $value : [];
+                                    ?>
+                                    <div
+                                        style="
+                                            position: relative;
+                                            max-width: 260px;
+                                        "
+                                    >
+                                        <div
+                                            style="
+                                                display: flex;
+                                                flex-wrap: nowrap;
+                                                gap: 8px;
+                                                overflow: hidden;
+                                                white-space: nowrap;
+                                                padding-right: 36px;
+                                            "
+                                        >
+                                            <?php if ($items === []): ?>
+                                                <span style="color: #6b7280;">-</span>
+                                            <?php else: ?>
+                                                <?php foreach ($items as $item): ?>
+                                                    <span
+                                                        style="
+                                                            display: inline-flex;
+                                                            align-items: center;
+                                                            padding: 6px 10px;
+                                                            border-radius: 999px;
+                                                            background: #eff6ff;
+                                                            border: 1px solid #bfdbfe;
+                                                            color: #1e3a8a;
+                                                            font-size: 12px;
+                                                            font-weight: 600;
+                                                            flex: 0 0 auto;
+                                                        "
+                                                    >
+                                                        <?= $this->escapeHtml((string) $item) ?>
+                                                    </span>
+                                                <?php endforeach; ?>
+                                            <?php endif; ?>
+                                        </div>
+
+                                        <?php if ($items !== []): ?>
+                                            <div
+                                                aria-hidden="true"
+                                                style="
+                                                    position: absolute;
+                                                    top: 0;
+                                                    right: 0;
+                                                    width: 52px;
+                                                    height: 100%;
+                                                    pointer-events: none;
+                                                    background: linear-gradient(to right, rgba(255,255,255,0), #fff 75%);
+                                                "
+                                            ></div>
+                                        <?php endif; ?>
+                                    </div>
+                                    <?php
                                 } else {
                                     echo $this->escapeHtml((string) $value);
                                 }

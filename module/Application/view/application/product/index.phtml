@@ -8,6 +8,9 @@ $user = $this->user ?? null;
 /** @var array $products */
 $products = $this->products ?? [];
 
+/** @var array $filters */
+$filters = $this->filters ?? [];
+
 echo $this->partial('layout/header', [
     'user' => $user,
 ]);
@@ -38,10 +41,15 @@ $view = $this;
 $rows = array_map(function ($product) use ($view) {
     $modalId = 'delete-product-' . $product->getId();
 
+    $categoryNames = array_map(
+        static fn ($category) => $category->getName(),
+        $product->getCategory()->toArray()
+    );
+
     return [
         'id' => $product->getId(),
         'name' => $product->getName(),
-        'category' => $product->getCategory()?->getName() ?? '-',
+        'categories' => $categoryNames,
         'price' => 'R$ ' . number_format((float) $product->getPrice(), 2, ',', '.'),
         'stock' => $product->getStock(),
         'status' => $product->isActive() ? 'Ativo' : 'Inativo',
@@ -67,7 +75,7 @@ echo $this->partial('layout/listing-table', [
     'columns' => [
         ['key' => 'id', 'label' => 'ID'],
         ['key' => 'name', 'label' => 'Nome'],
-        ['key' => 'category', 'label' => 'Categoria'],
+        ['key' => 'categories', 'label' => 'Categorias', 'type' => 'badges-fade'],
         ['key' => 'price', 'label' => 'Preço'],
         ['key' => 'stock', 'label' => 'Estoque'],
         ['key' => 'status', 'label' => 'Status'],
