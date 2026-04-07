@@ -1,0 +1,308 @@
+<?php
+
+declare(strict_types=1);
+
+/** @var \Application\Entity\User|null $user */
+$user = $this->user ?? null;
+
+/** @var \Application\Entity\Product|null $product */
+$product = $this->product ?? null;
+
+/** @var array<int, \Application\Entity\Category> $categories */
+$categories = $this->categories ?? [];
+
+/** @var array $errors */
+$errors = $this->errors ?? [];
+
+/** @var array $formData */
+$formData = $this->formData ?? [];
+
+$isEdit = $product !== null;
+$title = $isEdit ? 'Editar produto' : 'Novo produto';
+
+$name = (string) ($formData['name'] ?? $product?->getName() ?? '');
+$description = (string) ($formData['description'] ?? $product?->getDescription() ?? '');
+$price = (string) ($formData['price'] ?? ($product ? (string) $product->getPrice() : ''));
+$stock = (string) ($formData['stock'] ?? ($product ? (string) $product->getStock() : '0'));
+$isActive = (string) ($formData['isActive'] ?? ($product ? ($product->isActive() ? '1' : '0') : '1'));
+$selectedCategory = (string) ($formData['category'] ?? ($product?->getCategory()?->getId() ? (string) $product->getCategory()?->getId() : ''));
+
+echo $this->partial('layout/header', [
+    'user' => $user,
+]);
+?>
+
+<main style="max-width: 1200px; margin: 40px auto; padding: 0 24px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 24px; flex-wrap: wrap;">
+        <h1 style="margin: 0; font-size: 32px; color: #111827;">
+            <?= $this->escapeHtml($title) ?>
+        </h1>
+
+        <a
+            href="<?= $this->url('product') ?>"
+            style="
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                padding: 12px 18px;
+                border-radius: 8px;
+                background: #374151;
+                color: #fff;
+                text-decoration: none;
+                font-weight: 600;
+            "
+        >
+            Voltar
+        </a>
+    </div>
+
+    <div style="background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 32px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);">
+        <?php if (!empty($errors)): ?>
+            <div style="margin-bottom: 24px; padding: 16px; border-radius: 8px; background: #fee2e2; color: #991b1b; border: 1px solid #fecaca;">
+                <strong style="display: block; margin-bottom: 8px;">Corrija os erros abaixo:</strong>
+
+                <ul style="margin: 0; padding-left: 20px;">
+                    <?php foreach ($errors as $error): ?>
+                        <li><?= $this->escapeHtml($error) ?></li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+        <?php endif; ?>
+
+        <form method="post">
+            <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px;">
+                <div style="grid-column: span 2;">
+                    <label
+                        for="name"
+                        style="
+                            display: block;
+                            margin-bottom: 8px;
+                            font-size: 14px;
+                            font-weight: 700;
+                            color: #374151;
+                        "
+                    >
+                        Nome
+                    </label>
+
+                    <input
+                        type="text"
+                        name="name"
+                        id="name"
+                        value="<?= $this->escapeHtmlAttr($name) ?>"
+                        required
+                        style="
+                            width: 100%;
+                            padding: 12px 14px;
+                            border: 1px solid #d1d5db;
+                            border-radius: 8px;
+                            background: #fff;
+                            color: #111827;
+                        "
+                    >
+                </div>
+
+                <div>
+                    <label
+                        for="category"
+                        style="
+                            display: block;
+                            margin-bottom: 8px;
+                            font-size: 14px;
+                            font-weight: 700;
+                            color: #374151;
+                        "
+                    >
+                        Categoria
+                    </label>
+
+                    <select
+                        name="category"
+                        id="category"
+                        style="
+                            width: 100%;
+                            padding: 12px 14px;
+                            border: 1px solid #d1d5db;
+                            border-radius: 8px;
+                            background: #fff;
+                            color: #111827;
+                        "
+                    >
+                        <option value="">Selecione uma categoria</option>
+
+                        <?php foreach ($categories as $category): ?>
+                            <option
+                                value="<?= $this->escapeHtmlAttr((string) $category->getId()) ?>"
+                                <?= $selectedCategory === (string) $category->getId() ? 'selected' : '' ?>
+                            >
+                                <?= $this->escapeHtml($category->getName()) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <div>
+                    <label
+                        for="isActive"
+                        style="
+                            display: block;
+                            margin-bottom: 8px;
+                            font-size: 14px;
+                            font-weight: 700;
+                            color: #374151;
+                        "
+                    >
+                        Status
+                    </label>
+
+                    <select
+                        name="isActive"
+                        id="isActive"
+                        style="
+                            width: 100%;
+                            padding: 12px 14px;
+                            border: 1px solid #d1d5db;
+                            border-radius: 8px;
+                            background: #fff;
+                            color: #111827;
+                        "
+                    >
+                        <option value="1" <?= $isActive === '1' ? 'selected' : '' ?>>Ativo</option>
+                        <option value="0" <?= $isActive === '0' ? 'selected' : '' ?>>Inativo</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label
+                        for="price"
+                        style="
+                            display: block;
+                            margin-bottom: 8px;
+                            font-size: 14px;
+                            font-weight: 700;
+                            color: #374151;
+                        "
+                    >
+                        Preço
+                    </label>
+
+                    <input
+                        type="text"
+                        name="price"
+                        id="price"
+                        value="<?= $this->escapeHtmlAttr($price) ?>"
+                        required
+                        placeholder="Ex: 99,90"
+                        style="
+                            width: 100%;
+                            padding: 12px 14px;
+                            border: 1px solid #d1d5db;
+                            border-radius: 8px;
+                            background: #fff;
+                            color: #111827;
+                        "
+                    >
+                </div>
+
+                <div>
+                    <label
+                        for="stock"
+                        style="
+                            display: block;
+                            margin-bottom: 8px;
+                            font-size: 14px;
+                            font-weight: 700;
+                            color: #374151;
+                        "
+                    >
+                        Estoque
+                    </label>
+
+                    <input
+                        type="number"
+                        name="stock"
+                        id="stock"
+                        min="0"
+                        step="1"
+                        value="<?= $this->escapeHtmlAttr($stock) ?>"
+                        required
+                        style="
+                            width: 100%;
+                            padding: 12px 14px;
+                            border: 1px solid #d1d5db;
+                            border-radius: 8px;
+                            background: #fff;
+                            color: #111827;
+                        "
+                    >
+                </div>
+
+                <div style="grid-column: span 2;">
+                    <label
+                        for="description"
+                        style="
+                            display: block;
+                            margin-bottom: 8px;
+                            font-size: 14px;
+                            font-weight: 700;
+                            color: #374151;
+                        "
+                    >
+                        Descrição
+                    </label>
+
+                    <textarea
+                        name="description"
+                        id="description"
+                        rows="5"
+                        style="
+                            width: 100%;
+                            padding: 12px 14px;
+                            border: 1px solid #d1d5db;
+                            border-radius: 8px;
+                            background: #fff;
+                            color: #111827;
+                            resize: vertical;
+                        "
+                    ><?= $this->escapeHtml($description) ?></textarea>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; flex-wrap: wrap;">
+                <a
+                    href="<?= $this->url('product') ?>"
+                    style="
+                        display: inline-flex;
+                        align-items: center;
+                        justify-content: center;
+                        padding: 12px 18px;
+                        border-radius: 8px;
+                        background: #e5e7eb;
+                        color: #111827;
+                        text-decoration: none;
+                        font-weight: 600;
+                    "
+                >
+                    Cancelar
+                </a>
+
+                <button
+                    type="submit"
+                    style="
+                        padding: 12px 18px;
+                        border: 0;
+                        border-radius: 8px;
+                        background: #2563eb;
+                        color: #fff;
+                        font-weight: 600;
+                        cursor: pointer;
+                    "
+                >
+                    <?= $isEdit ? 'Salvar alterações' : 'Criar produto' ?>
+                </button>
+            </div>
+        </form>
+    </div>
+</main>
+
+<?= $this->partial('layout/footer') ?>

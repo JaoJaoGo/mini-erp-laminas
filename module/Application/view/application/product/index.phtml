@@ -1,0 +1,80 @@
+<?php
+
+declare(strict_types=1);
+
+/** @var \Application\Entity\User|null $user */
+$user = $this->user ?? null;
+
+/** @var array $products */
+$products = $this->products ?? [];
+
+echo $this->partial('layout/header', [
+    'user' => $user,
+]);
+
+echo $this->partial('layout/listing-toolbar', [
+    'title' => 'Produtos',
+    'backRoute' => 'home',
+    'createRoute' => 'product',
+    'createLabel' => 'Adicionar produto',
+    'filters' => [
+        [
+            'name' => 'name',
+            'label' => 'Nome',
+            'value' => $filters['name'] ?? '',
+            'placeholder' => 'Filtrar por nome',
+        ],
+        [
+            'name' => 'category',
+            'label' => 'Categoria',
+            'value' => $filters['category'] ?? '',
+            'placeholder' => 'Filtrar por categoria',
+        ],
+    ],
+]);
+
+$view = $this;
+
+$rows = array_map(function ($product) use ($view) {
+    $modalId = 'delete-product-' . $product->getId();
+
+    return [
+        'id' => $product->getId(),
+        'name' => $product->getName(),
+        'category' => $product->getCategory()?->getName() ?? '-',
+        'price' => 'R$ ' . number_format((float) $product->getPrice(), 2, ',', '.'),
+        'stock' => $product->getStock(),
+        'status' => $product->isActive() ? 'Ativo' : 'Inativo',
+        'actions' => sprintf(
+            '<div style="display:flex; gap:8px;">
+                <a href="%s" style="padding:8px 12px; background:#2563eb; color:#fff; text-decoration:none; border-radius:6px;">Editar</a>
+                <button type="button" onclick="document.getElementById(\'%s\').style.display=\'flex\'" style="padding:8px 12px; background:#dc2626; color:#fff; border:0; border-radius:6px; cursor:pointer;">Excluir</button>
+            </div>
+            %s',
+            $view->url('product/edit', ['id' => $product->getId()]),
+            $modalId,
+            $view->partial('layout/modal-delete', [
+                'modalId' => $modalId,
+                'title' => 'Apagar produto',
+                'message' => sprintf('Tem certeza que deseja apagar o produto "%s"?', $product->getName()),
+                'confirmUrl' => $view->url('product/delete', ['id' => $product->getId()]),
+            ])
+        ),
+    ];
+}, $products);
+
+echo $this->partial('layout/listing-table', [
+    'columns' => [
+        ['key' => 'id', 'label' => 'ID'],
+        ['key' => 'name', 'label' => 'Nome'],
+        ['key' => 'category', 'label' => 'Categoria'],
+        ['key' => 'price', 'label' => 'Preço'],
+        ['key' => 'stock', 'label' => 'Estoque'],
+        ['key' => 'status', 'label' => 'Status'],
+        ['key' => 'actions', 'label' => 'Ações', 'type' => 'html'],
+    ],
+    'rows' => $rows,
+    'emptyMessage' => 'Nenhum produto cadastrado.',
+]);
+
+echo $this->partial('layout/footer');

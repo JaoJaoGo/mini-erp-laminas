@@ -121,7 +121,7 @@ class Category
     public function setDescription(?string $description): self
     {
         $description = $description !== null ? trim($description) : null;
-        $this->description = $descrioption !== '' ? $description : null;
+        $this->description = $description !== '' ? $description : null;
 
         return $this;
     }

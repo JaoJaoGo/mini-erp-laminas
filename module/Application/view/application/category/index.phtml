@@ -1,0 +1,70 @@
+<?php
+
+declare(strict_types=1);
+
+/** @var \Application\Entity\User|null $user */
+$user = $this->user ?? null;
+
+/** @var array $categories */
+$categories = $this->categories ?? [];
+
+echo $this->partial('layout/header', [
+    'user' => $user,
+]);
+
+echo $this->partial('layout/listing-toolbar', [
+    'title' => 'Categorias',
+    'backRoute' => 'home',
+    'createRoute' => 'category',
+    'createLabel' => 'Adicionar categoria',
+    'filters' => [
+        [
+            'name' => 'name',
+            'label' => 'Nome',
+            'value' => $filters['name'] ?? '',
+            'placeholder' => 'Filtrar por nome',
+        ],
+    ],
+]);
+
+$view = $this;
+
+$rows = array_map(function ($category) use ($view) {
+    $modalId = 'delete-category-' . $category->getId();
+
+    return [
+        'id' => $category->getId(),
+        'name' => $category->getName(),
+        'description' => $category->getDescription() ?: '-',
+        'createdAt' => $category->getCreatedAt()->format('d/m/Y H:i'),
+        'actions' => sprintf(
+            '<div style="display:flex; gap:8px;">
+                <a href="%s" style="padding:8px 12px; background:#2563eb; color:#fff; text-decoration:none; border-radius:6px;">Editar</a>
+                <button type="button" onclick="document.getElementById(\'%s\').style.display=\'flex\'" style="padding:8px 12px; background:#dc2626; color:#fff; border:0; border-radius:6px; cursor:pointer;">Excluir</button>
+            </div>
+            %s',
+            $view->url('category/edit', ['id' => $category->getId()]),
+            $modalId,
+            $view->partial('layout/modal-delete', [
+                'modalId' => $modalId,
+                'title' => 'Apagar categoria',
+                'message' => sprintf('Tem certeza que deseja apagar a categoria "%s"?', $category->getName()),
+                'confirmUrl' => $view->url('category/delete', ['id' => $category->getId()]),
+            ])
+        ),
+    ];
+}, $categories);
+
+echo $this->partial('layout/listing-table', [
+    'columns' => [
+        ['key' => 'id', 'label' => 'ID'],
+        ['key' => 'name', 'label' => 'Nome'],
+        ['key' => 'description', 'label' => 'Descrição'],
+        ['key' => 'createdAt', 'label' => 'Criado em'],
+        ['key' => 'actions', 'label' => 'Ações', 'type' => 'html'],
+    ],
+    'rows' => $rows,
+    'emptyMessage' => 'Nenhuma categoria cadastrada.',
+]);
+
+echo $this->partial('layout/footer');

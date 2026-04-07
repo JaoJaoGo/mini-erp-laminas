@@ -1,0 +1,163 @@
+<?php
+
+declare(strict_types=1);
+
+/** @var \Application\Entity\User|null $user */
+$user = $this->user ?? null;
+
+/** @var \Application\Entity\Category|null $category */
+$category = $this->category ?? null;
+
+/** @var array $errors */
+$errors = $this->errors ?? [];
+
+$isEdit = $category !== null;
+$title = $isEdit ? 'Editar categoria' : 'Nova categoria';
+
+$name = $category?->getName() ?? '';
+$description = $category?->getDescription() ?? '';
+
+echo $this->partial('layout/header', [
+    'user' => $user,
+]);
+?>
+
+<main style="max-width: 1200px; margin: 40px auto; padding: 0 24px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 24px; flex-wrap: wrap;">
+        <h1 style="margin: 0; font-size: 32px; color: #111827">
+            <?= $this->escapeHtml($title) ?>
+        </h1>
+
+        <a 
+            href="<?= $this->url('category') ?>"
+            style="
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                padding: 12px 18px;
+                border-radius: 8px;
+                background: #374151;
+                color: #fff;
+                text-decoration: none;
+                font-weight: 600;
+            "
+        >
+            Voltar
+        </a>
+    </div>
+
+    <div style="background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 32px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);">
+        <?php if (!empty($errors)): ?>
+            <div style="margin-bottom: 24px; padding: 16px; border-radius: 8px; background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; ">
+                <strong style="display: block; margin-bottom: 8px;">Corrija os erros abaixo:</strong>
+
+                <ul style="margin: 0; padding-left: 20px;">
+                    <?php foreach ($errors as $error): ?>
+                        <li><?= $this->escapeHtml($error) ?></li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+        <?php endif; ?>
+
+        <form method="post">
+            <div style="display: grid; gap: 20px;">
+                <div>
+                    <label 
+                        for="name"
+                        style="
+                            display: block;
+                            margin-bottom: 8px;
+                            font-size: 14px;
+                            font-weight: 700;
+                            color: #374151;
+                        "
+                    >
+                        Nome
+                    </label>
+
+                    <input 
+                        type="text"
+                        name="name"
+                        id="name"
+                        value="<?= $this->escapeHtmlAttr((string) $name) ?>"
+                        required
+                        style="
+                            width: 100%;
+                            padding: 12px 14px;
+                            border: 1px solid #d1d5db;
+                            border-radius: 8px;
+                            background: #fff;
+                            color: #111827;
+                        "
+                    >
+                </div>
+
+                <div>
+                    <label 
+                        for="description"
+                        style="
+                            display: block;
+                            margin-bottom: 8px;
+                            font-size: 14px;
+                            font-weight: 700;
+                            color: #374151;
+                        "
+                    >
+                        Descrição
+                    </label>
+
+                    <textarea 
+                        name="description"
+                        id="description"
+                        rows="5"
+                        style="
+                            width: 100%;
+                            padding: 12px 14px;
+                            border: 1px solid #d1d5db;
+                            border-radius: 8px;
+                            background: #fff;
+                            color: #111827;
+                            resize: vertical;
+                        "
+                    ><?= $this->escapeHtml((string) $description) ?></textarea>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; flex-wrap: wrap;">
+                <a
+                    href="<?= $this->url('category') ?>"
+                    style="
+                        display: inline-flex;
+                        align-items: center;
+                        justify-content: center;
+                        padding: 12px 18px;
+                        border-radius: 8px;
+                        background: #e5e7eb;
+                        color: #111827;
+                        text-decoration: none;
+                        font-weight: 600;
+                    "
+                >
+                        Cancelar
+                </a>
+
+                <button
+                    type="submit"
+                    style="
+                        padding: 12px 18px;
+                        border: 0;
+                        border-radius: 8px;
+                        background: #2563eb;
+                        color: #fff;
+                        font-weight: 600;
+                        cursor: pointer;
+                    "
+                >
+                        <?= $isEdit ? 'Salvar alterações' : 'Criar categoria' ?>
+                </button>
+            </div>
+        </form>
+    </div>
+</main>
+
+<?= $this->partial('layout/footer') ?>
