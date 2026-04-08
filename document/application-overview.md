@@ -106,3 +106,46 @@ A aplicação usa templates simples em `module/Application/view` com HTML e CSS 
 - A validação de dados é feita no controlador e no formulário de login.
 - A aplicação utiliza `Doctrine ORM` para persistência e mapeamento de entidades.
 - A rota `CategoryController::view` está configurada nos caminhos de rota, mas não possui ação implementada.
+
+## Testes automatizados
+
+A aplicação possui uma cobertura completa de testes:
+
+### Estrutura de testes
+
+```
+module/Application/test/
+├── Controller/
+│   ├── ApplicationControllerTest.php
+│   ├── AuthControllerTest.php
+│   ├── CategoryControllerTest.php
+│   └── ProductControllerTest.php
+├── Service/
+│   ├── AuthServiceTest.php
+│   ├── CategoryServiceTest.php
+│   ├── MetricServiceTest.php
+│   └── ProductServiceTest.php
+├── Form/
+│   ├── CategoryFormTest.php
+│   └── ProductFormTest.php
+├── Repository/
+│   ├── CategoryRepositoryTest.php
+│   └── ProductRepositoryTest.php
+└── ModuleTest.php
+```
+
+### Cobertura
+
+- **73 testes** com **210+ assertions**
+- Controllers: Fluxos de requisição, redirecionamentos, erros 404
+- Services: Lógica de negócio, persistência, sincronização
+- Forms: Validações e requisitos de campo
+- Repositories: Queries customizadas do Doctrine
+- Module: Bootstrap e verificação de autenticação
+
+### Estratégia de testes
+
+- **Mocks**: Serviços são mockados para isolar camadas
+- **Request/Response**: Controllers testam com objetos Laminas reais
+- **Callbacks**: QueryBuilder é testado com callbacks para simular comportamentos
+- **Reflexão**: Propriedades privadas de controllers acessadas via Reflection para inicialização

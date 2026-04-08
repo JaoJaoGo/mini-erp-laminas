@@ -91,7 +91,33 @@ A aplicação fica disponível em:
 http://localhost:8080
 ```
 
-## Comandos Docker úteis
+## Executando testes
+
+Dentro do container:
+
+```bash
+# Todos os testes
+composer test
+
+# Com relatório legível
+vendor/bin/phpunit --testdox
+
+# Testes específicos
+vendor/bin/phpunit module/Application/test/Controller/CategoryControllerTest.php
+
+# Com cobertura de código
+vendor/bin/phpunit --coverage-html coverage/
+```
+
+A aplicação inclui **73 testes** que cobrem:
+
+- Autenticação e controle de acesso
+- CRUD de categorias e produtos
+- Validações de formulário
+- Filtros e buscas
+- Sincronização de relacionamentos
+- Queries customizadas do Doctrine
+- Casos de erro e edge cases
 
 - Iniciar: `docker compose up --build -d`
 - Parar: `docker compose down`
