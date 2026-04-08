@@ -6,6 +6,7 @@ namespace Application\Controller;
 
 use Application\Entity\Category;
 use Application\Entity\Product;
+use Application\Form\ProductForm;
 use Application\Service\AuthService;
 use Doctrine\ORM\EntityManager;
 use Laminas\Http\Request;
@@ -18,6 +19,7 @@ class ProductController extends AbstractActionController
     public function __construct(
         private readonly EntityManager $entityManager,
         private readonly AuthService $authService,
+        private readonly ProductForm $productForm,
     ) { }
 
     public function indexAction(): viewModel
@@ -57,53 +59,52 @@ class ProductController extends AbstractActionController
     public function createAction(): viewModel|Response
     {
         $request = $this->getRequest();
+        $form = clone $this->productForm;
         $categories = $this->getCategoryForForm();
 
         if (!$request instanceof Request || !$request->isPost()) {
+            $form->setData([
+                'name' => '',
+                'description' => '',
+                'price' => '',
+                'stock' => '0',
+                'isActive' => '1',
+                'categories' => [],
+            ]);
+
             return (new ViewModel([
                 'user' => $this->authService->getAuthenticatedUser(),
                 'product' => null,
                 'categories' => $categories,
-                'errors' => [],
-                'formData' => [
-                    'name' => '',
-                    'description' => '',
-                    'price' => '',
-                    'stock' => '0',
-                    'isActive' => '1',
-                    'categories' => [],
-                ],
+                'form' => $form,
             ]))->setTemplate('application/product/form');
         }
 
         $data = $request->getPost()->toArray();
-        $errors = $this->validateProductData($data);
+        $data['categories'] = $this->normalizeCategoryIds($data['categories'] ?? []);
+        $form->setData($data);
 
-        if ($errors !== []) {
+        if (!$form->isValid()) {
+            $this->appendCategoryValidationError($form, $data['categories']);
+
             return (new ViewModel([
                 'user' => $this->authService->getAuthenticatedUser(),
                 'product' => null,
                 'categories' => $categories,
-                'errors' => $errors,
-                'formData' => [
-                    'name' => (string) ($data['name'] ?? ''),
-                    'description' => (string) ($data['description'] ?? ''),
-                    'price' => (string) ($data['price'] ?? ''),
-                    'stock' => (string) ($data['stock' ?? '0']),
-                    'isActive' => (string) ($data['isActive'] ?? '1'),
-                    'categories' => $this->normalizeCategoryIds($data['categories'] ?? []),
-                ],
+                'form' => $form,
             ]))->setTemplate('application/product/form');
         }
 
         $product = new Product();
-        $product->setName((string) $data['name']);
-        $product->setDescription($data['description'] ?? null);
-        $product->setPrice($this->normalizeMoneyValue((string) $data['price']));
-        $product->setStock((int) ($data['stock'] ?? 0));
-        $product->setIsActive(((string) ($data['isActive'] ?? '1')) === '1');
+        $validatedData = $form->getData();
 
-        foreach ($this->findCategoriesFromData($data) as $category) {
+        $product->setName((string) $validatedData['name']);
+        $product->setDescription($validatedData['description'] ?? null);
+        $product->setPrice($this->normalizeMoneyValue((string) $validatedData['price']));
+        $product->setStock((int) ($validatedData['stock'] ?? 0));
+        $product->setIsActive(((string) ($validatedData['isActive'] ?? '1')) === '1');
+
+        foreach ($this->findCategoriesByIds($data['categories']) as $category) {
             $product->addCategory($category);
         }
 
@@ -113,7 +114,6 @@ class ProductController extends AbstractActionController
         return $this->redirect()->toRoute('product');
     }
 
-    // TODO: Adicionar funcionalidade de remover categorias do produto (e não apenas adicionar mais)
     public function editAction(): ViewModel|Response
     {
         $id = (int) $this->params()->fromRoute('id', 0);
@@ -126,57 +126,56 @@ class ProductController extends AbstractActionController
         }
 
         $request = $this->getRequest();
+        $form = clone $this->productForm;
         $categories = $this->getCategoryForForm();
 
         if (!$request instanceof Request || !$request->isPost()) {
-            $selectedCategories = array_map(
-                static fn (Category $category): string => (string) $category->getId(),
-                $product->getCategory()->toArray()
-            );
+            $form->setData([
+                'name' => $product->getName(),
+                'description' => $product->getDescription() ?? '',
+                'price' => str_replace('.', ',', (string) $product->getPrice()),
+                'stock' => (string) $product->getStock(),
+                'isActive' => $product->isActive() ? '1' : '0',
+                'categories' => array_map(
+                    static fn (Category $category): string => (string) $category->getId(),
+                    $product->getCategory()->toArray()
+                ),
+            ]);
 
             return (new ViewModel([
                 'user' => $this->authService->getAuthenticatedUser(),
                 'product' => $product,
                 'categories' => $categories,
-                'errors' => [],
-                'formData' => [
-                    'name' => $product->getName(),
-                    'description' => $product->getDescription() ?? '',
-                    'price' => (string) $product->getPrice(),
-                    'stock' => (string) $product->getStock(),
-                    'isActive' => $product->isActive() ? '1' : '0',
-                    'categories' => $selectedCategories,
-                ],
+                'form' => $form,
             ]))->setTemplate('application/product/form');
         }
 
         $data = $request->getPost()->toArray();
-        $errors = $this->validateProductData($data);
+        $data['categories'] = $this->normalizeCategoryIds($data['categories'] ?? []);
+        $form->setData($data);
 
-        if ($errors !== []) {
+        if (!$form->isValid()) {
+            $this->appendCategoryValidationError($form, $data['categories']);
+
             return (new ViewModel([
                 'user' => $this->authService->getAuthenticatedUser(),
                 'product' => $product,
                 'categories' => $categories,
-                'errors' => $errors,
-                'formData' => [
-                    'name' => (string) ($data['name'] ?? ''),
-                    'description' => (string) ($data['description'] ?? ''),
-                    'price' => (string) ($data['price'] ?? ''),
-                    'stock' => (string) ($data['stock'] ?? '0'),
-                    'isActive' => (string) ($data['isActive'] ?? '1'),
-                    'categories' => $this->normalizeCategoryIds($data['categories'] ?? []),
-                ],
+                'form' => $form,
             ]))->setTemplate('application/product/form');
         }
 
-        $product->setName((string) $data['name']);
-        $product->setDescription($data['description'] ?? null);
-        $product->setPrice($this->normalizeMoneyValue((string) $data['price']));
-        $product->setStock((int) ($data['stock'] ?? 0));
-        $product->setIsActive(((string) ($data['isActive'] ?? '1')) === '1');
+        $validatedData = $form->getData();
 
-        foreach($this->findCategoriesFromData($data) as $category) {
+        $product->setName((string) $validatedData['name']);
+        $product->setDescription($validatedData['description'] ?? null);
+        $product->setPrice($this->normalizeMoneyValue((string) $validatedData['price']));
+        $product->setStock((int) ($validatedData['stock'] ?? 0));
+        $product->setIsActive(((string) ($validatedData['isActive'] ?? '1')) === '1');
+
+        $product->clearCategories();
+
+        foreach($this->findCategoriesByIds($data['categories']) as $category) {
             $product->addCategory($category);
         }
 
@@ -198,49 +197,6 @@ class ProductController extends AbstractActionController
         }
 
         return $this->redirect()->toRoute('product');
-    }
-
-    private function validateProductData(array $data): array
-    {
-        $errors = [];
-
-        $name = trim((string) ($data['name'] ?? ''));
-        $price = trim((string) ($data['price'] ?? ''));
-        $stock = trim((string) ($data['stock'] ?? '0'));
-        $categoryIds = $this->normalizeCategoryIds($data['categories'] ?? []);
-
-        if ($name === '') {
-            $errors[] = 'O nome do produto é obrigatório.';
-        }
-
-        if (mb_strlen($name) > 150) {
-            $errors[] = 'O nome do produto deve ter no máximo 150 caracteres.';
-        }
-
-        if ($price === '') {
-            $errors[] = 'O preço do produto é obrigatório.';
-        } elseif (! is_numeric($this->normalizeMoneyValue($price))) {
-            $errors[] = 'Informe um preço válido.';
-        }
-
-        if ($stock === '') {
-            $errors[] = 'O estoque é obrigatório.';
-        } elseif (filter_var($stock, FILTER_VALIDATE_INT) === false) {
-            $errors[] = 'O estoque deve ser um número inteiro.';
-        } elseif ((int) $stock < 0) {
-            $errors[] = 'O estoque não pode ser negativo.';
-        }
-
-        foreach ($categoryIds as $categoryId) {
-            $category = $this->entityManager->find(Category::class, (int) $categoryId);
-
-            if (!$category instanceof Category) {
-                $errors[] = "Uma das categorias selecionadas é inválida.";
-                break;
-            }
-        }
-
-        return $errors;
     }
 
     /**
@@ -281,13 +237,14 @@ class ProductController extends AbstractActionController
     }
 
     /**
+     * @param array<int, string> $categoryIds
      * @return array<int, Category>
      */
-    private function findCategoriesFromData(array $data): array
+    private function findCategoriesByIds(array $categoryIds): array
     {
         $categories = [];
 
-        foreach ($this->normalizeCategoryIds($data['categories'] ?? []) as $categoryId) {
+        foreach ($categoryIds as $categoryId) {
             $category = $this->entityManager->find(Category::class, (int) $categoryId);
 
             if ($category instanceof Category) {
@@ -298,11 +255,37 @@ class ProductController extends AbstractActionController
         return $categories;
     }
 
+    /**
+     * @param array<int, string> $categoryIds
+     */
+    private function appendCategoryValidationError(ProductForm $form, array $categoryIds): void
+    {
+        foreach ($categoryIds as $categoryId) {
+            $category = $this->entityManager->find(Category::class, (int) $categoryId);
+
+            if (!$category instanceof Category) {
+                $form->get('categories')->setMessages([
+                    'invalidCategory' => 'Uma das categorias selecionadas é inválida.',
+                ]);
+                break;
+            }
+        }
+    }
+
     private function normalizeMoneyValue(string $value): string
     {
         $value = trim($value);
-        $value = str_replace('.', '', $value);
-        $value = str_replace(',', '.', $value);
+
+        if ($value === '') {
+            return '';
+        }
+
+        $value = str_replace(' ', '', $value);
+
+        if (str_contains($value, ',')) {
+            $value = str_replace('.', '', $value);
+            $value = str_replace(',', '.', $value);
+        }
 
         return $value;
     }

@@ -8,39 +8,65 @@ $user = $this->user ?? null;
 /** @var \Application\Entity\Product|null $product */
 $product = $this->product ?? null;
 
+/** @var \Application\Form\ProductForm $form */
+$form = $this->form;
+
 /** @var array<int, \Application\Entity\Category> $categories */
 $categories = $this->categories ?? [];
-
-/** @var array $errors */
-$errors = $this->errors ?? [];
-
-/** @var array $formData */
-$formData = $this->formData ?? [];
 
 $isEdit = $product !== null;
 $title = $isEdit ? 'Editar produto' : 'Novo produto';
 
-$name = (string) ($formData['name'] ?? $product?->getName() ?? '');
-$description = (string) ($formData['description'] ?? $product?->getDescription() ?? '');
-$price = (string) ($formData['price'] ?? ($product ? (string) $product->getPrice() : ''));
-$stock = (string) ($formData['stock'] ?? ($product ? (string) $product->getStock() : '0'));
-$isActive = (string) ($formData['isActive'] ?? ($product ? ($product->isActive() ? '1' : '0') : '1'));
-$selectedCategories = $formData['categories'] ?? [];
+$form->prepare();
 
-if (! is_array($selectedCategories)) {
+$nameElement = $form->get('name');
+$descriptionElement = $form->get('description');
+$priceElement = $form->get('price');
+$stockElement = $form->get('stock');
+$isActiveElement = $form->get('isActive');
+$csrfElement = $form->get('csrf');
+
+$selectedCategories = $form->get('categories')->getValue() ?? [];
+
+if (!is_array($selectedCategories)) {
     $selectedCategories = [];
 }
 
 $categoriesMap = [];
-
 foreach ($categories as $category) {
     $categoriesMap[(string) $category->getId()] = $category->getName();
 }
 
-echo $this->partial('layout/header', [
-    'user' => $user,
-]);
+$nameElement->setAttribute('style', 'width: 100%; padding: 12px 14px; border: 1px solid #d1d5db; border-radius: 8px; background: #fff; color: #111827;');
+$descriptionElement->setAttribute('style', 'width: 100%; padding: 12px 14px; border: 1px solid #d1d5db; border-radius: 8px; background: #fff; color: #111827; resize: vertical;');
+$priceElement->setAttribute('style', 'width: 100%; padding: 12px 14px; border: 1px solid #d1d5db; border-radius: 8px; background: #fff; color: #111827;');
+$stockElement->setAttribute('style', 'width: 100%; padding: 12px 14px; border: 1px solid #d1d5db; border-radius: 8px; background: #fff; color: #111827;');
+$isActiveElement->setAttribute('style', 'width: 100%; padding: 12px 14px; border: 1px solid #d1d5db; border-radius: 8px; background: #fff; color: #111827;');
+
+function renderFieldErrors(array $messages, $escapeHtml): string {
+    if (empty($messages)) {
+        return '';
+    }
+
+    $html = '<div style="margin-top: 6px; color: #b91c1c; font-size: 14px;">';
+
+    foreach ($messages as $message) {
+        if (is_array($message)) {
+            foreach ($message as $nestedMessage) {
+                $html .= '<div>' . $escapeHtml($nestedMessage) . '</div>';
+            }
+        } else {
+            $html .= '<div>' . $escapeHtml($message) . '</div>';
+        }
+    }
+
+    $html .= '</div>';
+
+    return $html;
+}
 ?>
+
+<?= $this->partial('layout/header', ['user' => $user]) ?>
 
 <main style="max-width: 1200px; margin: 40px auto; padding: 0 24px;">
     <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 24px; flex-wrap: wrap;">
@@ -67,61 +93,26 @@ echo $this->partial('layout/header', [
     </div>
 
     <div style="background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 32px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);">
-        <?php if (! empty($errors)): ?>
-            <div style="margin-bottom: 24px; padding: 16px; border-radius: 8px; background: #fee2e2; color: #991b1b; border: 1px solid #fecaca;">
-                <strong style="display: block; margin-bottom: 8px;">Corrija os erros abaixo:</strong>
+        <?= $this->form()->openTag($form) ?>
+            <?= $this->formHidden($csrfElement) ?>
 
-                <ul style="margin: 0; padding-left: 20px;">
-                    <?php foreach ($errors as $error): ?>
-                        <li><?= $this->escapeHtml($error) ?></li>
-                    <?php endforeach; ?>
-                </ul>
-            </div>
-        <?php endif; ?>
-
-        <form method="post">
             <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px;">
                 <div style="grid-column: span 2;">
                     <label
-                        for="name"
-                        style="
-                            display: block;
-                            margin-bottom: 8px;
-                            font-size: 14px;
-                            font-weight: 700;
-                            color: #374151;
-                        "
+                        for="<?= $this->escapeHtmlAttr($nameElement->getAttribute('id')) ?>"
+                        style="display: block; margin-bottom: 8px; font-size: 14px; font-weight: 700; color: #374151;"
                     >
-                        Nome
+                        <?= $this->escapeHtml($nameElement->getLabel()) ?>
                     </label>
 
-                    <input
-                        type="text"
-                        name="name"
-                        id="name"
-                        value="<?= $this->escapeHtmlAttr($name) ?>"
-                        required
-                        style="
-                            width: 100%;
-                            padding: 12px 14px;
-                            border: 1px solid #d1d5db;
-                            border-radius: 8px;
-                            background: #fff;
-                            color: #111827;
-                        "
-                    >
+                    <?= $this->formText($nameElement) ?>
+                    <?= renderFieldErrors($nameElement->getMessages(), [$this, 'escapeHtml']) ?>
                 </div>
 
                 <div>
                     <label
                         for="category-selector"
-                        style="
-                            display: block;
-                            margin-bottom: 8px;
-                            font-size: 14px;
-                            font-weight: 700;
-                            color: #374151;
-                        "
+                        style="display: block; margin-bottom: 8px; font-size: 14px; font-weight: 700; color: #374151;"
                     >
                         Categorias
                     </label>
@@ -207,128 +198,50 @@ echo $this->partial('layout/header', [
 
                 <div>
                     <label
-                        for="isActive"
-                        style="
-                            display: block;
-                            margin-bottom: 8px;
-                            font-size: 14px;
-                            font-weight: 700;
-                            color: #374151;
-                        "
+                        for="<?= $this->escapeHtmlAttr($isActiveElement->getAttribute('id')) ?>"
+                        style="display: block; margin-bottom: 8px; font-size: 14px; font-weight: 700; color: #374151;"
                     >
-                        Status
+                        <?= $this->escapeHtml($isActiveElement->getLabel()) ?>
                     </label>
 
-                    <select
-                        name="isActive"
-                        id="isActive"
-                        style="
-                            width: 100%;
-                            padding: 12px 14px;
-                            border: 1px solid #d1d5db;
-                            border-radius: 8px;
-                            background: #fff;
-                            color: #111827;
-                        "
-                    >
-                        <option value="1" <?= $isActive === '1' ? 'selected' : '' ?>>Ativo</option>
-                        <option value="0" <?= $isActive === '0' ? 'selected' : '' ?>>Inativo</option>
-                    </select>
+                    <?= $this->formSelect($isActiveElement) ?>
+                    <?= renderFieldErrors($isActiveElement->getMessages(), [$this, 'escapeHtml']) ?>
                 </div>
 
                 <div>
                     <label
-                        for="price"
-                        style="
-                            display: block;
-                            margin-bottom: 8px;
-                            font-size: 14px;
-                            font-weight: 700;
-                            color: #374151;
-                        "
+                        for="<?= $this->escapeHtmlAttr($priceElement->getAttribute('id')) ?>"
+                        style="display: block; margin-bottom: 8px; font-size: 14px; font-weight: 700; color: #374151;"
                     >
-                        Preço
+                        <?= $this->escapeHtml($priceElement->getLabel()) ?>
                     </label>
 
-                    <input
-                        type="text"
-                        name="price"
-                        id="price"
-                        value="<?= $this->escapeHtmlAttr($price) ?>"
-                        required
-                        placeholder="Ex: 99,90"
-                        style="
-                            width: 100%;
-                            padding: 12px 14px;
-                            border: 1px solid #d1d5db;
-                            border-radius: 8px;
-                            background: #fff;
-                            color: #111827;
-                        "
-                    >
+                    <?= $this->formText($priceElement) ?>
+                    <?= renderFieldErrors($priceElement->getMessages(), [$this, 'escapeHtml']) ?>
                 </div>
 
                 <div>
                     <label
-                        for="stock"
-                        style="
-                            display: block;
-                            margin-bottom: 8px;
-                            font-size: 14px;
-                            font-weight: 700;
-                            color: #374151;
-                        "
+                        for="<?= $this->escapeHtmlAttr($stockElement->getAttribute('id')) ?>"
+                        style="display: block; margin-bottom: 8px; font-size: 14px; font-weight: 700; color: #374151;"
                     >
-                        Estoque
+                        <?= $this->escapeHtml($stockElement->getLabel()) ?>
                     </label>
 
-                    <input
-                        type="number"
-                        name="stock"
-                        id="stock"
-                        min="0"
-                        step="1"
-                        value="<?= $this->escapeHtmlAttr($stock) ?>"
-                        required
-                        style="
-                            width: 100%;
-                            padding: 12px 14px;
-                            border: 1px solid #d1d5db;
-                            border-radius: 8px;
-                            background: #fff;
-                            color: #111827;
-                        "
-                    >
+                    <?= $this->formNumber($stockElement) ?>
+                    <?= renderFieldErrors($stockElement->getMessages(), [$this, 'escapeHtml']) ?>
                 </div>
 
                 <div style="grid-column: span 2;">
                     <label
-                        for="description"
-                        style="
-                            display: block;
-                            margin-bottom: 8px;
-                            font-size: 14px;
-                            font-weight: 700;
-                            color: #374151;
-                        "
+                        for="<?= $this->escapeHtmlAttr($descriptionElement->getAttribute('id')) ?>"
+                        style="display: block; margin-bottom: 8px; font-size: 14px; font-weight: 700; color: #374151;"
                     >
-                        Descrição
+                        <?= $this->escapeHtml($descriptionElement->getLabel()) ?>
                     </label>
 
-                    <textarea
-                        name="description"
-                        id="description"
-                        rows="5"
-                        style="
-                            width: 100%;
-                            padding: 12px 14px;
-                            border: 1px solid #d1d5db;
-                            border-radius: 8px;
-                            background: #fff;
-                            color: #111827;
-                            resize: vertical;
-                        "
-                    ><?= $this->escapeHtml($description) ?></textarea>
+                    <?= $this->formTextarea($descriptionElement) ?>
+                    <?= renderFieldErrors($descriptionElement->getMessages(), [$this, 'escapeHtml']) ?>
                 </div>
             </div>
 
@@ -365,7 +278,7 @@ echo $this->partial('layout/header', [
                     <?= $isEdit ? 'Salvar alterações' : 'Criar produto' ?>
                 </button>
             </div>
-        </form>
+        <?= $this->form()->closeTag() ?>
     </div>
 </main>
 

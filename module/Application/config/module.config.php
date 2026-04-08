@@ -13,6 +13,8 @@ use Application\Controller\HomeController;
 use Application\Controller\CategoryController;
 use Application\Controller\ProductController;
 use Application\Form\LoginForm;
+use Application\Form\CategoryForm;
+use Application\Form\ProductForm;
 use Application\Service\AuthService;
 use Application\Service\Factory\AuthServiceFactory;
 use Laminas\Router\Http\Literal;
@@ -211,6 +213,8 @@ return [
         'factories' => [
             AuthService::class => AuthServiceFactory::class,
             LoginForm::class => InvokableFactory::class,
+            ProductForm::class => InvokableFactory::class,
+            CategoryForm::class => InvokableFactory::class,
         ],
     ],
 

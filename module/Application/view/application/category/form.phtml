@@ -8,19 +8,45 @@ $user = $this->user ?? null;
 /** @var \Application\Entity\Category|null $category */
 $category = $this->category ?? null;
 
-/** @var array $errors */
-$errors = $this->errors ?? [];
+/** @var \Application\Form\CategoryForm $form */
+$form = $this->form;
 
 $isEdit = $category !== null;
 $title = $isEdit ? 'Editar categoria' : 'Nova categoria';
 
-$name = $category?->getName() ?? '';
-$description = $category?->getDescription() ?? '';
+$form->prepare();
 
-echo $this->partial('layout/header', [
-    'user' => $user,
-]);
+$nameElement = $form->get('name');
+$descriptionElement = $form->get('description');
+$csrfElement = $form->get('csrf');
+
+$nameElement->setAttribute('style', 'width: 100%; padding: 12px 14px; border: 1px solid #d1d5db; border-radius: 8px; background: #fff; color: #111827;');
+$descriptionElement->setAttribute('style', 'width: 100%; padding: 12px 14px; border: 1px solid #d1d5db; border-radius: 8px; background: #fff; color: #111827; resize: vertical;');
+
+function renderFieldErrors(array $messages, $escapeHtml): string {
+    if (empty($messages)) {
+        return '';
+    }
+
+    $html = 'margin-bottom: 24px; padding: 16px; border-radius: 8px; background: #fee2e2; color: #991b1b; border: 1px solid #fecaca;';
+
+    foreach ($messages as $message) {
+        if (is_array($message)) {
+            foreach ($message as $nestedMessage) {
+                $html .= '<div>' . $escapeHtml($nestedMessage) . '</div>';
+            }
+        } else {
+            $html .= '<div>' . $escapeHtml($message) . '</div>';
+        }
+    }
+
+    $html .= '</div>';
+
+    return $html;
+}
 ?>
+
+<?= $this->partial('layout/header', ['user' => $user,]); ?>
 
 <main style="max-width: 1200px; margin: 40px auto; padding: 0 24px;">
     <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 24px; flex-wrap: wrap;">
@@ -47,23 +73,13 @@ echo $this->partial('layout/header', [
     </div>
 
     <div style="background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 32px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);">
-        <?php if (!empty($errors)): ?>
-            <div style="margin-bottom: 24px; padding: 16px; border-radius: 8px; background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; ">
-                <strong style="display: block; margin-bottom: 8px;">Corrija os erros abaixo:</strong>
+        <?= $this->form()->openTag($form) ?>
+            <?= $this->formHidden($csrfElement) ?>
 
-                <ul style="margin: 0; padding-left: 20px;">
-                    <?php foreach ($errors as $error): ?>
-                        <li><?= $this->escapeHtml($error) ?></li>
-                    <?php endforeach; ?>
-                </ul>
-            </div>
-        <?php endif; ?>
-
-        <form method="post">
             <div style="display: grid; gap: 20px;">
                 <div>
                     <label 
-                        for="name"
+                        for="<?= $this->escapeHtmlAttr($nameElement->getAttribute('id')) ?>"
                         style="
                             display: block;
                             margin-bottom: 8px;
@@ -72,29 +88,16 @@ echo $this->partial('layout/header', [
                             color: #374151;
                         "
                     >
-                        Nome
+                        <?= $this->escapeHtml($nameElement->getLabel()) ?>
                     </label>
 
-                    <input 
-                        type="text"
-                        name="name"
-                        id="name"
-                        value="<?= $this->escapeHtmlAttr((string) $name) ?>"
-                        required
-                        style="
-                            width: 100%;
-                            padding: 12px 14px;
-                            border: 1px solid #d1d5db;
-                            border-radius: 8px;
-                            background: #fff;
-                            color: #111827;
-                        "
-                    >
+                    <?= $this->formText($nameElement) ?>
+                    <?= renderFieldErrors($nameElement->getMessages(), [$this, 'escapeHtml']) ?>
                 </div>
 
                 <div>
                     <label 
-                        for="description"
+                        for="<?= $this->escapeHtmlAttr($descriptionElement->getAttribute('id')) ?>"
                         style="
                             display: block;
                             margin-bottom: 8px;
@@ -103,23 +106,11 @@ echo $this->partial('layout/header', [
                             color: #374151;
                         "
                     >
-                        Descrição
+                        <?= $this->escapeHtml($descriptionElement->getLabel()) ?>
                     </label>
 
-                    <textarea 
-                        name="description"
-                        id="description"
-                        rows="5"
-                        style="
-                            width: 100%;
-                            padding: 12px 14px;
-                            border: 1px solid #d1d5db;
-                            border-radius: 8px;
-                            background: #fff;
-                            color: #111827;
-                            resize: vertical;
-                        "
-                    ><?= $this->escapeHtml((string) $description) ?></textarea>
+                    <?= $this->formTextarea($descriptionElement) ?>
+                    <?= renderFieldErrors($descriptionElement->getMessages(), [$this, 'escapeHtml']) ?>
                 </div>
             </div>
 
@@ -156,7 +147,7 @@ echo $this->partial('layout/header', [
                         <?= $isEdit ? 'Salvar alterações' : 'Criar categoria' ?>
                 </button>
             </div>
-        </form>
+        <?= $this->form()->closeTag() ?>
     </div>
 </main>
 

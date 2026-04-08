@@ -6,6 +6,7 @@ namespace Application\Controller\Factory;
 
 use Application\Controller\CategoryController;
 use Application\Service\AuthService;
+use Application\Form\CategoryForm;
 use Doctrine\ORM\EntityManager;
 use Psr\Container\ContainerInterface;
 
@@ -16,6 +17,7 @@ class CategoryControllerFactory
         return new CategoryController(
             $container->get(EntityManager::class),
             $container->get(AuthService::class),
+            $container->get(CategoryForm::class),
         );
     }
 }

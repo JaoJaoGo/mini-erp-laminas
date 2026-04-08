@@ -6,6 +6,7 @@ namespace Application\Controller;
 
 use Application\Entity\Category;
 use Application\Service\AuthService;
+use Application\Form\CategoryForm;
 use Doctrine\ORM\EntityManager;
 use Laminas\Http\Request;
 use Laminas\Http\Response;
@@ -17,6 +18,7 @@ class CategoryController extends AbstractActionController
     public function __construct(
         private readonly EntityManager $entityManager,
         private readonly AuthService $authService,
+        private readonly CategoryForm $categoryForm,
     ) { }
 
     public function indexAction(): ViewModel
@@ -44,19 +46,25 @@ class CategoryController extends AbstractActionController
     public function createAction(): ViewModel|Response
     {
         $request = $this->getRequest();
+        $form = clone $this->categoryForm;
 
         if (!$request instanceof Request || !$request->isPost()) {
+            $form->setData([
+                'name' => '',
+                'description' => '',
+            ]);
+
             return (new ViewModel([
                 'user' => $this->authService->getAuthenticatedUser(),
                 'category' => null,
-                'errors' => [],
+                'form' => $form,
             ]))->setTemplate('application/category/form');
         }
 
         $data = $request->getPost()->toArray();
-        $errors = $this->validateCategoryData($data);
+        $form->setData($data);
 
-        if($errors !== []) {
+        if(!$form->isValid()) {
             $category = new Category();
             $category->setName((string) ($data['name'] ?? ''));
             $category->setDescription($data['description'] ?? null);
@@ -64,13 +72,15 @@ class CategoryController extends AbstractActionController
             return (new ViewModel([
                 'user' => $this->authService->getAuthenticatedUser(),
                 'category' => $category,
-                'errors' => $errors,
+                'form' => $form
             ]))->setTemplate('application/category/form');
         }
 
         $category = new Category();
-        $category->setName((string) ($data['name'] ?? ''));
-        $category->setDescription($data['description'] ?? null);
+        $validatedData = $form->getData();
+
+        $category->setName((string) ($validatedData['name'] ?? ''));
+        $category->setDescription($validatedData['description'] ?? null);
 
         $this->entityManager->persist($category);
         $this->entityManager->flush();
@@ -90,31 +100,39 @@ class CategoryController extends AbstractActionController
         }
 
         $request = $this->getRequest();
+        $form = clone $this->categoryForm;
 
         if(!$request instanceof Request || !$request->isPost()) {
+            $form->setData([
+                'name' => $category->getName(),
+                'description' => $category->getDescription(),
+            ]);
+
             return (new ViewModel([
                 'user' => $this->authService->getAuthenticatedUser(),
                 'category' => $category,
-                'errors' => [],
+                'form' => $form,
             ]))->setTemplate('application/category/form');
         }
 
         $data = $request->getPost()->toArray();
-        $errors = $this->validateCategoryData($data);
+        $form->setData($data);
 
-        if ($errors !== []) {
+        if (!$form->isValid()) {
             $category->setName((string) ($data['name'] ?? ''));
             $category->setDescription($data['description'] ?? null);
 
             return (new ViewModel([
                 'user' => $this->authService->getAuthenticatedUser(),
                 'category' => $category,
-                'errors' => $errors,
+                'form' => $form,
             ]))->setTemplate('application/category/form');
         }
 
-        $category->setName((string) $data['name']);
-        $category->setDescription($data['description'] ?? null);
+        $validatedData = $form->getData();
+
+        $category->setName((string) $validatedData['name']);
+        $category->setDescription($validatedData['description'] ?? null);
 
         $this->entityManager->flush();
 
@@ -134,22 +152,5 @@ class CategoryController extends AbstractActionController
         }
 
         return $this->redirect()->toRoute('category');
-    }
-
-    private function validateCategoryData(array $data): array
-    {
-        $errors = [];
-
-        $name = trim((string) ($data['name'] ?? ''));
-
-        if ($name === '') {
-            $errors[] = 'O nome da categoria é obrigatório.';
-        }
-
-        if (mb_strlen($name) > 150) {
-            $errors[] = "O nome da categoria deve ter no máximo 150 caracteres.";
-        }
-
-        return $errors;
     }
 }
