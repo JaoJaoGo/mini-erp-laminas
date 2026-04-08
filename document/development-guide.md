@@ -14,6 +14,8 @@ mini-erp-laminas/
 │   │   ├── Controller/     # Controladores
 │   │   ├── Entity/         # Entidades Doctrine
 │   │   ├── Form/           # Formulários
+│   │   ├── Repository/     # Repositórios de dados
+│   │   ├── Response/       # Classes de resposta
 │   │   ├── Service/        # Serviços de negócio
 │   │   └── Module.php      # Bootstrap do módulo
 │   ├── test/               # Testes unitários

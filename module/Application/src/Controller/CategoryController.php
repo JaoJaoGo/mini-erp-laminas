@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace Application\Controller;
 
 use Application\Entity\Category;
-use Application\Service\AuthService;
 use Application\Form\CategoryForm;
-use Doctrine\ORM\EntityManager;
+use Application\Response\CategoryResponse;
+use Application\Service\AuthService;
+use Application\Service\CategoryService;
 use Laminas\Http\Request;
 use Laminas\Http\Response;
 use Laminas\Mvc\Controller\AbstractActionController;
@@ -16,7 +17,8 @@ use Laminas\View\Model\ViewModel;
 class CategoryController extends AbstractActionController
 {
     public function __construct(
-        private readonly EntityManager $entityManager,
+        private readonly CategoryService $categoryService,
+        private readonly CategoryResponse $categoryResponse,
         private readonly AuthService $authService,
         private readonly CategoryForm $categoryForm,
     ) { }
@@ -25,22 +27,11 @@ class CategoryController extends AbstractActionController
     {
         $name = trim((string) $this->params()->fromQuery('name', ''));
 
-        $repository = $this->entityManager->getRepository(Category::class);
-        $qb = $repository->createQueryBuilder('c')->orderBy('c.id', 'DESC');
-
-        if ($name !== '') {
-            $qb->andWhere('c.name LIKE :name')->setParameter('name', '%' . $name . "%");
-        }
-
-        $categories = $qb->getQuery()->getResult();
-
-        return new ViewModel([
-            'user' => $this->authService->getAuthenticatedUser(),
-            'categories' => $categories,
-            'filters' => [
-                'name' => $name,
-            ],
-        ]);
+        return $this->categoryResponse->index(
+            user: $this->authService->getAuthenticatedUser(),
+            categories: $this->categoryService->getFilteredCategories($name),
+            filters: $this->categoryResponse->createFilters($name),
+        );
     }
 
     public function createAction(): ViewModel|Response
@@ -48,42 +39,28 @@ class CategoryController extends AbstractActionController
         $request = $this->getRequest();
         $form = clone $this->categoryForm;
 
-        if (!$request instanceof Request || !$request->isPost()) {
-            $form->setData([
-                'name' => '',
-                'description' => '',
-            ]);
+        if (!$this->isPostRequest($request)) {
+            $form->setData($this->categoryResponse->createFormData());
 
-            return (new ViewModel([
-                'user' => $this->authService->getAuthenticatedUser(),
-                'category' => null,
-                'form' => $form,
-            ]))->setTemplate('application/category/form');
+            return $this->renderForm($form);
         }
 
         $data = $request->getPost()->toArray();
         $form->setData($data);
 
-        if(!$form->isValid()) {
-            $category = new Category();
-            $category->setName((string) ($data['name'] ?? ''));
-            $category->setDescription($data['description'] ?? null);
+        if (!$form->isValid()) {
+            $category = $this->categoryService->fillEntity(
+                $this->categoryService->createEmpty(),
+                $data
+            );
 
-            return (new ViewModel([
-                'user' => $this->authService->getAuthenticatedUser(),
-                'category' => $category,
-                'form' => $form
-            ]))->setTemplate('application/category/form');
+            return $this->renderForm($form, $category);
         }
 
-        $category = new Category();
+        /** @var array{name:string, description:mixed} $validatedData */
         $validatedData = $form->getData();
 
-        $category->setName((string) ($validatedData['name'] ?? ''));
-        $category->setDescription($validatedData['description'] ?? null);
-
-        $this->entityManager->persist($category);
-        $this->entityManager->flush();
+        $this->categoryService->create($validatedData);
 
         return $this->redirect()->toRoute('category');
     }
@@ -91,66 +68,61 @@ class CategoryController extends AbstractActionController
     public function editAction(): ViewModel|Response
     {
         $id = (int) $this->params()->fromRoute('id', 0);
+        $category = $this->categoryService->findById($id);
 
-        /** @var Category|null $category */
-        $category = $this->entityManager->find(Category::class, $id);
-
-        if (!$category instanceof Category) {
+        if ($category === null) {
             return $this->notFoundAction();
         }
 
         $request = $this->getRequest();
         $form = clone $this->categoryForm;
 
-        if(!$request instanceof Request || !$request->isPost()) {
-            $form->setData([
-                'name' => $category->getName(),
-                'description' => $category->getDescription(),
-            ]);
+        if (!$this->isPostRequest($request)) {
+            $form->setData($this->categoryResponse->createFormData($category));
 
-            return (new ViewModel([
-                'user' => $this->authService->getAuthenticatedUser(),
-                'category' => $category,
-                'form' => $form,
-            ]))->setTemplate('application/category/form');
+            return $this->renderForm($form, $category);
         }
 
         $data = $request->getPost()->toArray();
         $form->setData($data);
 
         if (!$form->isValid()) {
-            $category->setName((string) ($data['name'] ?? ''));
-            $category->setDescription($data['description'] ?? null);
+            $this->categoryService->fillEntity($category, $data);
 
-            return (new ViewModel([
-                'user' => $this->authService->getAuthenticatedUser(),
-                'category' => $category,
-                'form' => $form,
-            ]))->setTemplate('application/category/form');
+            return $this->renderForm($form, $category);
         }
 
+        /** @var array{name:string, description:mixed} $validatedData */
         $validatedData = $form->getData();
 
-        $category->setName((string) $validatedData['name']);
-        $category->setDescription($validatedData['description'] ?? null);
-
-        $this->entityManager->flush();
+        $this->categoryService->update($category, $validatedData);
 
         return $this->redirect()->toRoute('category');
     }
 
     public function deleteAction(): Response
     {
-        $id = $this->params()->fromRoute('id', 0);
+        $id = (int) $this->params()->fromRoute('id', 0);
+        $category = $this->categoryService->findById($id);
 
-        /** @var Category|null $category */
-        $category = $this->entityManager->find(Category::class, $id);
-
-        if ($category instanceof Category) {
-            $this->entityManager->remove($category);
-            $this->entityManager->flush();
+        if ($category !== null) {
+            $this->categoryService->delete($category);
         }
 
         return $this->redirect()->toRoute('category');
+    }
+
+    private function isPostRequest(mixed $request): bool
+    {
+        return $request instanceof Request && $request->isPost();
+    }
+
+    private function renderForm(CategoryForm $form, ?Category $category = null): ViewModel
+    {
+        return $this->categoryResponse->form(
+            user: $this->authService->getAuthenticatedUser(),
+            form: $form,
+            category: $category,
+        );
     }
 }

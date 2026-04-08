@@ -18,7 +18,9 @@ O Mini ERP Laminas é um projeto de estudo construído com Laminas MVC e Doctrin
 - `module/Application/src/Controller` — Controladores da aplicação.
 - `module/Application/src/Entity` — Entidades mapeadas pelo Doctrine.
 - `module/Application/src/Form` — Formulários e validações.
-- `module/Application/src/Service` — Serviço de autenticação.
+- `module/Application/src/Service` — Serviços de negócio.
+- `module/Application/src/Repository` — Repositórios para acesso a dados.
+- `module/Application/src/Response` — Classes para manipulação de respostas.
 - `module/Application/view` — Templates de visualização.
 - `config/autoload/doctrine.local.php` — Configuração do Doctrine.
 - `config/application.config.php` — Configuração principal da aplicação Laminas.
@@ -36,10 +38,24 @@ O Mini ERP Laminas é um projeto de estudo construído com Laminas MVC e Doctrin
 ### Serviço
 
 - `AuthService` — Autentica usuário, mantém sessão e recupera o usuário logado.
+- `CategoryService` — Lógica de negócio para operações com categorias.
+- `ProductService` — Lógica de negócio para operações com produtos.
 
 ### Formulário
 
 - `LoginForm` — Validação de e-mail, senha e token CSRF.
+- `CategoryForm` — Formulário para criação e edição de categorias.
+- `ProductForm` — Formulário para criação e edição de produtos.
+
+### Repositório
+
+- `CategoryRepository` — Acesso a dados de categorias.
+- `ProductRepository` — Acesso a dados de produtos.
+
+### Resposta
+
+- `CategoryResponse` — Manipulação de respostas para operações com categorias.
+- `ProductResponse` — Manipulação de respostas para operações com produtos.
 
 ### Entidades
 

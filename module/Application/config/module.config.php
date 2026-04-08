@@ -16,7 +16,19 @@ use Application\Form\LoginForm;
 use Application\Form\CategoryForm;
 use Application\Form\ProductForm;
 use Application\Service\AuthService;
+use Application\Service\CategoryService;
+use Application\Service\ProductService;
 use Application\Service\Factory\AuthServiceFactory;
+use Application\Service\Factory\CategoryServiceFactory;
+use Application\Service\Factory\ProductServiceFactory;
+use Application\Repository\CategoryRepository;
+use Application\Repository\ProductRepository;
+use Application\Repository\Factory\CategoryRepositoryFactory;
+use Application\Repository\Factory\ProductRepositoryFactory;
+use Application\Response\CategoryResponse;
+use Application\Response\ProductResponse;
+use Application\Response\Factory\CategoryResponseFactory;
+use Application\Response\Factory\ProductResponseFactory;
 use Laminas\Router\Http\Literal;
 use Laminas\Router\Http\Segment;
 use Laminas\ServiceManager\Factory\InvokableFactory;
@@ -212,6 +224,12 @@ return [
     'service_manager' => [
         'factories' => [
             AuthService::class => AuthServiceFactory::class,
+            CategoryService::class => CategoryServiceFactory::class,
+            CategoryRepository::class => CategoryRepositoryFactory::class,
+            CategoryResponse::class => CategoryResponseFactory::class,
+            ProductService::class => ProductServiceFactory::class,
+            ProductRepository::class => ProductRepositoryFactory::class,
+            ProductResponse::class => ProductResponseFactory::class,
             LoginForm::class => InvokableFactory::class,
             ProductForm::class => InvokableFactory::class,
             CategoryForm::class => InvokableFactory::class,

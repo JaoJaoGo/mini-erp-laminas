@@ -5,17 +5,20 @@ declare(strict_types=1);
 namespace Application\Controller\Factory;
 
 use Application\Controller\CategoryController;
-use Application\Service\AuthService;
 use Application\Form\CategoryForm;
-use Doctrine\ORM\EntityManager;
+use Application\Response\CategoryResponse;
+use Application\Service\AuthService;
+use Application\Service\CategoryService;
+use Laminas\ServiceManager\Factory\FactoryInterface;
 use Psr\Container\ContainerInterface;
 
-class CategoryControllerFactory
+class CategoryControllerFactory implements FactoryInterface
 {
-    public function __invoke(ContainerInterface $container): CategoryController
+    public function __invoke(ContainerInterface $container, $requestedName, ?array $options = null): CategoryController
     {
         return new CategoryController(
-            $container->get(EntityManager::class),
+            $container->get(CategoryService::class),
+            $container->get(CategoryResponse::class),
             $container->get(AuthService::class),
             $container->get(CategoryForm::class),
         );

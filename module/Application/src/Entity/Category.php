@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Application\Entity;
 
+use Application\Repository\CategoryRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -42,15 +43,15 @@ use Doctrine\ORM\Mapping as ORM;
  * 
  * @package Application\Entity
  * @author João Víctor Guedes Carrijo <jvgcarrijo@gmail.com>
- * @version 1.0
+ * @version 2.0
  * @since 2024-04-06
  * @see Product
  * 
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass: CategoryRepository::class)
  * @ORM\Table(name="categories")
  * @ORM\HasLifecycleCallbacks
  */
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: CategoryRepository::class)]
 #[ORM\Table(name: 'categories')]
 #[ORM\HasLifecycleCallbacks]
 class Category
