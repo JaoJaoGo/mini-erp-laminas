@@ -5,29 +5,27 @@ declare(strict_types=1);
 namespace Application\Controller;
 
 use Application\Service\AuthService;
-use Application\Entity\Category;
-use Application\Entity\Product;
-use Doctrine\ORM\EntityManager;
+use Application\Service\MetricService;
 use Laminas\Mvc\Controller\AbstractActionController;
 use Laminas\View\Model\ViewModel;
 
 class HomeController extends AbstractActionController
 {
     public function __construct(
+        private readonly MetricService $metricService,
         private readonly AuthService $authService,
-        private readonly EntityManager $entityManager,
     ) { }
 
     public function homeAction()
     {
-        $totalCategories = (int) $this->entityManager->getRepository(Category::class)->count([]);
-
-        $totalProducts = (int) $this->entityManager->getRepository(Product::class)->count([]);
+        $dashboardData = $this->metricService->getDashboardData();
 
         return new ViewModel([
             'user' => $this->authService->getAuthenticatedUser(),
-            'totalCategories' => $totalCategories,
-            'totalProducts' => $totalProducts,
+            'totalCategories' => $dashboardData['totalCategories'],
+            'totalProducts' => $dashboardData['totalProducts'],
+            'productsPerCategoryChart' => $this->metricService->getProductsPerCategoryChart(),
+            'productsStatusChart' => $this->metricService->getProductsStatusChart(),
         ]);
     }
 }

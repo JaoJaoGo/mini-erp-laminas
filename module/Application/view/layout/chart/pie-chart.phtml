@@ -1,0 +1,78 @@
+<?php
+
+declare (strict_types=1);
+
+/**
+ * Espera receber:
+ * - string $chartId
+ * - string $title
+ * - array<int, string> $labels
+ * - array<int, int|float> $values
+ */
+
+$chartId = $chartId ?? ('pie-chart-' . uniqid());
+$title = $title ?? 'Gráfico';
+$labels = $labels ?? [];
+$values = $values ?? [];
+
+$labelsJson = json_encode(array_values($labels), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+$valuesJson = json_encode(array_values($values), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+?>
+
+<div
+    style="
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0,08);
+    "
+>
+    <div style="margin-bottom: 16px;">
+        <h2 style="margin: 0; font-size: 20px; color: #111827;">
+            <?= $this->escapeHtml($title) ?>
+        </h2>
+    </div>
+
+    <div style="position: relative; width: 100%; max-width: 420px; margin: 0 auto;">
+        <canvas id="<?= $this->escapeHtmlAttr($chartId) ?>"></canvas>
+    </div>
+</div>
+
+<script>
+    (() => {
+        const canvasId = <?= json_encode($chartId, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
+        const labels = <?= $labelsJson ?>;
+        const values = <?= $valuesJson ?>;
+
+        const canvas = document.getElementById(canvasId);
+
+        if (!canvas || typeof Chart === 'undefined') {
+            return;
+        }
+
+        const existingChart = Chart.getChart(canvas);
+        if (existingChart) {
+            existingChart.destroy();
+        }
+
+        new Chart(canvas, {
+            type: 'pie',
+            data: {
+                labels,
+                datasets: [{
+                    data: values,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    })();
+</script>

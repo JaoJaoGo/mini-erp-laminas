@@ -1,0 +1,67 @@
+<?php
+declare(strict_types=1);
+
+/**
+ * @var array{
+ *     labels: array<int, string>,
+ *     values: array<int, int|float>
+ * } $productsPerCategoryChart
+ */
+
+$productsPerCategoryChart = $productsPerCategoryChart ?? [
+    'labels' => [],
+    'values' => [],
+];
+
+$productsStatusChart = $productsStatusChart ?? [
+    'labels' => [],
+    'values' => [],
+];
+?>
+
+<section style="max-width: 1200px; margin: 40px auto; padding: 0 24px;">
+    <script src="/js/vendor/chart.umd.js"></script>
+
+    <div style="background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 32px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);">
+        <h1 style="margin: 0 0 12px; font-size: 32px; color: #111827;">
+            Métricas do sistema
+        </h1>
+
+        <p style="margin: 0 0 24px; color: #6b7280; font-size: 16px;">
+            Veja as métricas mais detalhadas do sistema.
+        </p>
+
+        <div
+            style="
+                height: 1px;
+                width: 100%;
+                margin: 28px 0;
+                background: linear-gradient(
+                    to right,
+                    transparent 0%,
+                    rgba(107, 114, 128, 0.15) 5%,
+                    rgba(107, 114, 128, 0.45) 50%,
+                    rgba(107, 114, 128, 0.15) 95%,
+                    transparent 100%
+                );
+                box-shadow: 0 1px 2px rgba(107, 114, 128, 0.15);
+            "
+        ></div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 24px;">
+            <?= $this->partial('layout/chart/pie-chart', [
+                'chartId' => 'products-per-category-chart',
+                'title' => 'Produtos por categoria',
+                'labels' => $productsPerCategoryChart['labels'],
+                'values' => $productsPerCategoryChart['values'],
+            ]) ?>
+
+            <?= $this->partial('layout/chart/pie-chart', [
+                'chartId' => 'products-status-chart',
+                'title' => 'Produtos ativos e inativos',
+                'labels' => $productsStatusChart['labels'],
+                'values' => $productsStatusChart['values'],
+            ]) ?>
+        </div>
+    </div>
+</section>

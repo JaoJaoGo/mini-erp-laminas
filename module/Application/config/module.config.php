@@ -16,9 +16,11 @@ use Application\Form\LoginForm;
 use Application\Form\CategoryForm;
 use Application\Form\ProductForm;
 use Application\Service\AuthService;
+use Application\Service\MetricService;
 use Application\Service\CategoryService;
 use Application\Service\ProductService;
 use Application\Service\Factory\AuthServiceFactory;
+use Application\Service\Factory\MetricServiceFactory;
 use Application\Service\Factory\CategoryServiceFactory;
 use Application\Service\Factory\ProductServiceFactory;
 use Application\Repository\CategoryRepository;
@@ -224,6 +226,7 @@ return [
     'service_manager' => [
         'factories' => [
             AuthService::class => AuthServiceFactory::class,
+            MetricService::class => MetricServiceFactory::class,
             CategoryService::class => CategoryServiceFactory::class,
             CategoryRepository::class => CategoryRepositoryFactory::class,
             CategoryResponse::class => CategoryResponseFactory::class,
@@ -250,6 +253,7 @@ return [
             'layout/listing-table' => __DIR__ . '/../view/layout/listing-table.phtml',
             'layout/listing-toolbar' => __DIR__ . '/../view/layout/listing-toolbar.phtml',
             'layout/modal-delete' => __DIR__ . '/../view/layout/modal-delete.phtml',
+            'layout/chart/pie-chart' => __DIR__ . '/../view/layout/chart/pie-chart.phtml',
             'application/auth/login' => __DIR__ . '/../view/application/auth/login.phtml',
             'application/home/home' => __DIR__ . '/../view/application/home/home.phtml',
             'application/category/index' => __DIR__ . '/../view/application/category/index.phtml',

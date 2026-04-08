@@ -25,4 +25,26 @@ class CategoryRepository extends EntityRepository
 
         return $categories;
     }
+
+    /**
+     * @return array<int, array{name:string, total:int}>
+     */
+    public function getProductCountGroupedByCategory(): array
+    {
+        $rows = $this->createQueryBuilder('c')
+            ->select('c.name AS name, COUNT(p.id) AS total')
+            ->leftJoin('c.products', 'p')
+            ->groupBy('c.id')
+            ->orderBy('c.name', 'ASC')
+            ->getQuery()
+            ->getArrayResult();
+
+        return array_map(
+            static fn (array $row): array => [
+                'name' => (string) $row['name'],
+                'total' => (int) $row['total'],
+            ],
+            $rows
+        );
+    }
 }

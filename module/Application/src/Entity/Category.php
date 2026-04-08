@@ -19,7 +19,7 @@ use Doctrine\ORM\Mapping as ORM;
  * - description: Descrição da categoria (string, opcional).
  * - createdAt: Data e hora de criação da categoria (DateTimeImmutable).
  * - updatedAt: Data e hora da última atualização da categoria (DateTimeImmutable).
- * - products: Coleção de produtos associados a esta categoria (OneToMany).
+ * - products: Coleção de produtos associados a esta categoria (ManyToMany).
  * 
  * Métodos:
  * - getId(): Retorna o ID da categoria.
@@ -76,7 +76,7 @@ class Category
     /**
      * @var Collection<int, Product>
      */
-    #[ORM\OneToMany(mappedBy: 'category', targetEntity: Product::class)]
+    #[ORM\ManyToMany(targetEntity: Product::class, mappedBy: 'categories')]
     private Collection $products;
 
     public function __construct()
