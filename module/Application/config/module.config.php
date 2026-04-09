@@ -19,10 +19,12 @@ use Application\Service\AuthService;
 use Application\Service\MetricService;
 use Application\Service\CategoryService;
 use Application\Service\ProductService;
+use Application\Service\ProductImageService;
 use Application\Service\Factory\AuthServiceFactory;
 use Application\Service\Factory\MetricServiceFactory;
 use Application\Service\Factory\CategoryServiceFactory;
 use Application\Service\Factory\ProductServiceFactory;
+use Application\Service\Factory\ProductImageServiceFactory;
 use Application\Repository\CategoryRepository;
 use Application\Repository\ProductRepository;
 use Application\Repository\Factory\CategoryRepositoryFactory;
@@ -231,12 +233,17 @@ return [
             CategoryRepository::class => CategoryRepositoryFactory::class,
             CategoryResponse::class => CategoryResponseFactory::class,
             ProductService::class => ProductServiceFactory::class,
+            ProductImageService::class => ProductImageServiceFactory::class,
             ProductRepository::class => ProductRepositoryFactory::class,
             ProductResponse::class => ProductResponseFactory::class,
             LoginForm::class => InvokableFactory::class,
             ProductForm::class => InvokableFactory::class,
             CategoryForm::class => InvokableFactory::class,
         ],
+    ],
+
+    'product_upload' => [
+        'public_directory' => dirname(__DIR__, 3) . '/public',
     ],
 
     'view_manager' => [

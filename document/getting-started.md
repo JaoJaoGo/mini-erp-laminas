@@ -70,6 +70,38 @@ php vendor/bin/doctrine-module orm:schema-tool:update --dump-sql
 php vendor/bin/doctrine-module orm:schema-tool:update --force
 ```
 
+## Permitindo salvar imagens de produtos na pasta
+
+Garanta que a pasta exista ou possa ser criada:
+
+1. Criar a pasta, se ainda não existir
+
+```bash
+docker compose exec laminas sh
+mkdir -p /var/www/public/uploads/products
+```
+
+2. Dar ownership para o usuário do servidor web
+
+```bash
+chown -R www-data:www-data /var/www/public/uploads
+chmod -R 755 /var/www/public/uploads
+```
+
+### Como verificar se deu certo
+
+Ainda dentro do container:
+
+```bash
+ls -ld /var/www/public/uploads
+ls -ld /var/www/public/uploads/products
+whoami
+```
+
+Você quer ver algo parecido com:
+- dono/grupo: ```www-data www-data```
+- permissão com escrita para owner e grupo
+
 ## Usuário inicial
 
 A aplicação não fornece cadastro de usuários pela interface. É necessário criar o primeiro usuário diretamente no banco de dados ou por um script PHP.
@@ -103,13 +135,13 @@ composer test
 vendor/bin/phpunit --testdox
 
 # Testes específicos
-vendor/bin/phpunit module/Application/test/Controller/CategoryControllerTest.php
+vendor/bin/phpunit module/Application/test/Controller/ProductControllerTest.php
 
 # Com cobertura de código
 vendor/bin/phpunit --coverage-html coverage/
 ```
 
-A aplicação inclui **73 testes** que cobrem:
+A aplicação inclui **85 testes** que cobrem:
 
 - Autenticação e controle de acesso
 - CRUD de categorias e produtos
@@ -117,6 +149,7 @@ A aplicação inclui **73 testes** que cobrem:
 - Filtros e buscas
 - Sincronização de relacionamentos
 - Queries customizadas do Doctrine
+- **Upload de imagens** (validação, substituição, deleção)
 - Casos de erro e edge cases
 
 - Iniciar: `docker compose up --build -d`

@@ -21,6 +21,7 @@ $form->prepare();
 
 $nameElement = $form->get('name');
 $descriptionElement = $form->get('description');
+$imageElement = $form->get('image');
 $priceElement = $form->get('price');
 $stockElement = $form->get('stock');
 $isActiveElement = $form->get('isActive');
@@ -39,6 +40,7 @@ foreach ($categories as $category) {
 
 $nameElement->setAttribute('style', 'width: 100%; padding: 12px 14px; border: 1px solid #d1d5db; border-radius: 8px; background: #fff; color: #111827;');
 $descriptionElement->setAttribute('style', 'width: 100%; padding: 12px 14px; border: 1px solid #d1d5db; border-radius: 8px; background: #fff; color: #111827; resize: vertical;');
+$imageElement->setAttribute('style', 'width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; background: #fff; color: #111827;');
 $priceElement->setAttribute('style', 'width: 100%; padding: 12px 14px; border: 1px solid #d1d5db; border-radius: 8px; background: #fff; color: #111827;');
 $stockElement->setAttribute('style', 'width: 100%; padding: 12px 14px; border: 1px solid #d1d5db; border-radius: 8px; background: #fff; color: #111827;');
 $isActiveElement->setAttribute('style', 'width: 100%; padding: 12px 14px; border: 1px solid #d1d5db; border-radius: 8px; background: #fff; color: #111827;');
@@ -206,6 +208,31 @@ function renderFieldErrors(array $messages, $escapeHtml): string {
 
                     <?= $this->formSelect($isActiveElement) ?>
                     <?= renderFieldErrors($isActiveElement->getMessages(), [$this, 'escapeHtml']) ?>
+                </div>
+
+                <div style="grid-column: span 2;">
+                    <label
+                        for="<?= $this->escapeHtmlAttr($imageElement->getAttribute('id')) ?>"
+                        style="display: block; margin-bottom: 8px; font-size: 14px; font-weight: 700; color: #374151;"
+                    >
+                        <?= $this->escapeHtml($imageElement->getLabel()) ?>
+                    </label>
+
+                    <?php if ($isEdit && $product?->getImagePath()): ?>
+                        <div style="margin-bottom: 12px;">
+                            <img
+                                src="<?= $this->escapeHtmlAttr($product->getImagePath()) ?>"
+                                alt="<?= $this->escapeHtmlAttr($product->getName()) ?>"
+                                style="width: 160px; height: 160px; object-fit: cover; border-radius: 12px; border: 1px solid #e5e7eb;"
+                            >
+                        </div>
+                    <?php endif; ?>
+
+                    <?= $this->formFile($imageElement) ?>
+                    <div style="margin-top: 8px; font-size: 13px; color: #6b7280;">
+                        Envie JPG, JPEG, PNG ou WEBP com até 5MB.
+                    </div>
+                    <?= renderFieldErrors($imageElement->getMessages(), [$this, 'escapeHtml']) ?>
                 </div>
 
                 <div>

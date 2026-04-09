@@ -11,7 +11,7 @@ use Application\Form\ProductForm;
 use Application\Response\ProductResponse;
 use Application\Service\AuthService;
 use Application\Service\ProductService;
-use Laminas\Http\Request;
+use Laminas\Http\PhpEnvironment\Request;
 use Laminas\Http\Response;
 use Laminas\Mvc\Controller\PluginManager;
 use Laminas\Mvc\Controller\Plugin\Redirect;
@@ -296,6 +296,160 @@ class ProductControllerTest extends TestCase
 
         self::assertInstanceOf(Response::class, $result);
         self::assertSame(302, $result->getStatusCode());
+    }
+
+    public function testCreateActionPostWithImageUploadRedirects(): void
+    {
+        $this->authService->method('getAuthenticatedUser')->willReturn(null);
+        $this->productService->method('getCategoriesForForm')->willReturn([]);
+        $this->productService->method('normalizeCategoryIds')->willReturn(['1']);
+        $this->productService->expects(self::once())
+            ->method('create')
+            ->with(self::anything(), ['1'], self::isInstanceOf(\Laminas\Http\PhpEnvironment\Request::class))
+            ->willReturn(new Product());
+
+        $form = clone $this->productForm;
+        $data = [
+            'name' => 'Produto com Imagem',
+            'description' => 'Descrição',
+            'price' => '99,90',
+            'stock' => '10',
+            'isActive' => '1',
+            'categories' => ['1'],
+            'csrf' => $form->get('csrf')->getValue(),
+        ];
+
+        $request = new Request();
+        $request->setMethod(Request::METHOD_POST);
+        $request->setPost(new Parameters($data));
+        $this->setControllerRequest($request);
+
+        $result = $this->controller->createAction();
+
+        self::assertInstanceOf(Response::class, $result);
+        self::assertSame(302, $result->getStatusCode());
+    }
+
+    public function testCreateActionPostCatchesRuntimeExceptionFromImageUpload(): void
+    {
+        $this->authService->method('getAuthenticatedUser')->willReturn(null);
+        $this->productService->method('getCategoriesForForm')->willReturn([]);
+        $this->productService->method('normalizeCategoryIds')->willReturn([]);
+        $this->productService->expects(self::once())
+            ->method('create')
+            ->will($this->throwException(new \RuntimeException('Falha ao enviar a imagem')));
+
+        $form = clone $this->productForm;
+        $data = [
+            'name' => 'Produto',
+            'description' => 'Descr',
+            'price' => '50,00',
+            'stock' => '5',
+            'isActive' => '1',
+            'categories' => [],
+            'csrf' => $form->get('csrf')->getValue(),
+        ];
+
+        $request = new Request();
+        $request->setMethod(Request::METHOD_POST);
+        $request->setPost(new Parameters($data));
+        $this->setControllerRequest($request);
+
+        $result = $this->controller->createAction();
+
+        self::assertInstanceOf(\Laminas\View\Model\ViewModel::class, $result);
+        self::assertArrayHasKey('form', $result->getVariables());
+        $returnedForm = $result->getVariable('form');
+        self::assertNotEmpty($returnedForm->get('image')->getMessages());
+    }
+
+    public function testEditActionPostWithImageUpdateRedirects(): void
+    {
+        $product = new Product();
+        $product->setName('Original');
+
+        $this->authService->method('getAuthenticatedUser')->willReturn(null);
+        $this->productService->expects(self::once())
+            ->method('findById')
+            ->with(789)
+            ->willReturn($product);
+
+        $this->productService->method('getCategoriesForForm')->willReturn([]);
+        $this->productService->expects(self::once())
+            ->method('normalizeCategoryIds')
+            ->willReturn(['1']);
+
+        $this->productService->expects(self::once())
+            ->method('update')
+            ->with($product, self::anything(), ['1'], self::isInstanceOf(\Laminas\Http\PhpEnvironment\Request::class))
+            ->willReturn($product);
+
+        $form = clone $this->productForm;
+        $data = [
+            'name' => 'Atualizado',
+            'description' => 'Nova descrição',
+            'price' => '149,90',
+            'stock' => '20',
+            'isActive' => '1',
+            'categories' => ['1'],
+            'csrf' => $form->get('csrf')->getValue(),
+        ];
+
+        $request = new Request();
+        $request->setMethod(Request::METHOD_POST);
+        $request->setPost(new Parameters($data));
+        $this->setControllerRequest($request);
+        $this->controller->setEvent($this->createRouteEvent(['id' => 789]));
+
+        $result = $this->controller->editAction();
+
+        self::assertInstanceOf(Response::class, $result);
+        self::assertSame(302, $result->getStatusCode());
+    }
+
+    public function testEditActionPostCatchesRuntimeExceptionFromImageUpload(): void
+    {
+        $product = new Product();
+        $product->setName('Original');
+
+        $this->authService->method('getAuthenticatedUser')->willReturn(null);
+        $this->productService->expects(self::once())
+            ->method('findById')
+            ->with(789)
+            ->willReturn($product);
+
+        $this->productService->method('getCategoriesForForm')->willReturn([]);
+        $this->productService->expects(self::once())
+            ->method('normalizeCategoryIds')
+            ->willReturn([]);
+
+        $this->productService->expects(self::once())
+            ->method('update')
+            ->will($this->throwException(new \RuntimeException('Formato de imagem inválido')));
+
+        $form = clone $this->productForm;
+        $data = [
+            'name' => 'Produto',
+            'description' => 'Descr',
+            'price' => '100,00',
+            'stock' => '15',
+            'isActive' => '1',
+            'categories' => [],
+            'csrf' => $form->get('csrf')->getValue(),
+        ];
+
+        $request = new Request();
+        $request->setMethod(Request::METHOD_POST);
+        $request->setPost(new Parameters($data));
+        $this->setControllerRequest($request);
+        $this->controller->setEvent($this->createRouteEvent(['id' => 789]));
+
+        $result = $this->controller->editAction();
+
+        self::assertInstanceOf(\Laminas\View\Model\ViewModel::class, $result);
+        self::assertArrayHasKey('form', $result->getVariables());
+        $returnedForm = $result->getVariable('form');
+        self::assertNotEmpty($returnedForm->get('image')->getMessages());
     }
 
     private function createPluginManager(): PluginManager

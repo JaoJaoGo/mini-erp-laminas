@@ -10,6 +10,7 @@ use Application\Service\ProductService;
 use Doctrine\ORM\EntityManager;
 use Laminas\ServiceManager\Factory\FactoryInterface;
 use Psr\Container\ContainerInterface;
+use Application\Service\ProductImageService;
 
 class ProductServiceFactory implements FactoryInterface
 {
@@ -19,6 +20,7 @@ class ProductServiceFactory implements FactoryInterface
             $container->get(EntityManager::class),
             $container->get(ProductRepository::class),
             $container->get(CategoryRepository::class),
+            $container->get(ProductImageService::class),
         );
     }
 }

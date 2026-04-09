@@ -10,9 +10,11 @@ use Application\Form\ProductForm;
 use Application\Repository\CategoryRepository;
 use Application\Repository\ProductRepository;
 use Application\Service\ProductService;
+use Application\Service\ProductImageService;
 use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\QueryBuilder;
+use Laminas\Http\PhpEnvironment\Request;
 use PHPUnit\Framework\TestCase;
 
 class ProductServiceTest extends TestCase
@@ -21,13 +23,20 @@ class ProductServiceTest extends TestCase
     private EntityManager $entityManager;
     private ProductRepository $productRepository;
     private CategoryRepository $categoryRepository;
+    private ProductImageService $productImageService;
 
     protected function setUp(): void
     {
         $this->entityManager = $this->createMock(EntityManager::class);
         $this->productRepository = $this->createMock(ProductRepository::class);
         $this->categoryRepository = $this->createMock(CategoryRepository::class);
-        $this->service = new ProductService($this->entityManager, $this->productRepository, $this->categoryRepository);
+        $this->productImageService = $this->createMock(ProductImageService::class);
+        $this->service = new ProductService(
+            $this->entityManager,
+            $this->productRepository,
+            $this->categoryRepository,
+            $this->productImageService,
+        );
     }
 
     public function testNormalizeCategoryIdsFiltersAndDeduplicatesValues(): void
@@ -129,11 +138,18 @@ class ProductServiceTest extends TestCase
 
     public function testCreatePersistsProductAndFlushes(): void
     {
+        $request = $this->createMock(Request::class);
+
         $this->categoryRepository->expects(self::exactly(2))
             ->method('find')
             ->willReturnCallback(static function (int $id) {
                 return new Category();
             });
+
+        $this->productImageService->expects(self::once())
+            ->method('uploadFromRequest')
+            ->with($request)
+            ->willReturn('/uploads/products/image123.jpg');
 
         $this->entityManager->expects(self::once())
             ->method('persist')
@@ -151,14 +167,53 @@ class ProductServiceTest extends TestCase
                 'isActive' => '1',
             ],
             ['1', '2'],
+            $request,
         );
 
         self::assertSame('Mesa', $product->getName());
+        self::assertSame('/uploads/products/image123.jpg', $product->getImagePath());
         self::assertSame(2, $product->getCategories()->count());
+    }
+
+    public function testCreateProductWithoutImagePathWhenNoFileUploaded(): void
+    {
+        $request = $this->createMock(Request::class);
+
+        $this->categoryRepository->expects(self::once())
+            ->method('find')
+            ->willReturn(new Category());
+
+        $this->productImageService->expects(self::once())
+            ->method('uploadFromRequest')
+            ->with($request)
+            ->willReturn(null);
+
+        $this->entityManager->expects(self::once())
+            ->method('persist')
+            ->with(self::isInstanceOf(Product::class));
+
+        $this->entityManager->expects(self::once())
+            ->method('flush');
+
+        $product = $this->service->create(
+            [
+                'name' => 'Produto Sem Imagem',
+                'description' => 'Sem imagem',
+                'price' => '50,00',
+                'stock' => '0',
+                'isActive' => '0',
+            ],
+            ['1'],
+            $request,
+        );
+
+        self::assertSame('Produto Sem Imagem', $product->getName());
+        self::assertNull($product->getImagePath());
     }
 
     public function testUpdateFlushesProductChanges(): void
     {
+        $request = $this->createMock(Request::class);
         $category1 = new Category();
         $category2 = new Category();
 
@@ -167,6 +222,11 @@ class ProductServiceTest extends TestCase
             ->willReturnCallback(static function (int $id) use ($category1, $category2) {
                 return $id === 1 ? $category1 : $category2;
             });
+
+        $this->productImageService->expects(self::once())
+            ->method('uploadFromRequest')
+            ->with($request)
+            ->willReturn(null);
 
         $this->entityManager->expects(self::once())
             ->method('flush');
@@ -179,14 +239,81 @@ class ProductServiceTest extends TestCase
             'price' => '249,90',
             'stock' => '5',
             'isActive' => '1',
-        ], ['1', '2']);
+        ], ['1', '2'], $request);
 
         self::assertSame($product, $result);
         self::assertSame(2, $product->getCategories()->count());
     }
 
+    public function testUpdateReplacesImageAndDeletesOldWhenNewImageProvided(): void
+    {
+        $request = $this->createMock(Request::class);
+        $oldImagePath = '/uploads/products/old_image.jpg';
+
+        $this->productImageService->expects(self::once())
+            ->method('uploadFromRequest')
+            ->with($request)
+            ->willReturn('/uploads/products/new_image.jpg');
+
+        $this->productImageService->expects(self::once())
+            ->method('delete')
+            ->with($oldImagePath);
+
+        $this->entityManager->expects(self::once())
+            ->method('flush');
+
+        $product = new Product();
+        $product->setImagePath($oldImagePath);
+
+        $result = $this->service->update($product, [
+            'name' => 'Produto Atualizado',
+            'description' => 'Descr atualizada',
+            'price' => '100,00',
+            'stock' => '10',
+            'isActive' => '1',
+        ], [], $request);
+
+        self::assertSame('/uploads/products/new_image.jpg', $result->getImagePath());
+    }
+
+    public function testUpdateKeepsOldImageWhenNoNewImageProvided(): void
+    {
+        $request = $this->createMock(Request::class);
+        $existingImagePath = '/uploads/products/existing_image.jpg';
+
+        $this->productImageService->expects(self::once())
+            ->method('uploadFromRequest')
+            ->with($request)
+            ->willReturn(null);
+
+        $this->productImageService->expects(self::never())
+            ->method('delete');
+
+        $this->entityManager->expects(self::once())
+            ->method('flush');
+
+        $product = new Product();
+        $product->setImagePath($existingImagePath);
+
+        $result = $this->service->update($product, [
+            'name' => 'Sem Mudança de Imagem',
+            'description' => 'Mesma imagem',
+            'price' => '79,90',
+            'stock' => '15',
+            'isActive' => '1',
+        ], [], $request);
+
+        self::assertSame($existingImagePath, $result->getImagePath());
+    }
     public function testCreateProductWithoutCategoriesOnlyPersistsProduct(): void
     {
+        $request = $this->createMock(Request::class);
+
+        $this->productImageService->expects(self::once())
+            ->method('uploadFromRequest')
+            ->with($request)
+            ->willReturn(null);
+
         $this->entityManager->expects(self::once())
             ->method('persist')
             ->with(self::isInstanceOf(Product::class));
@@ -200,7 +327,7 @@ class ProductServiceTest extends TestCase
             'price' => '50,00',
             'stock' => '0',
             'isActive' => '0',
-        ], []);
+        ], [], $request);
 
         self::assertSame('Produto Sem Categorias', $product->getName());
         self::assertSame(0, $product->getCategories()->count());
@@ -208,6 +335,7 @@ class ProductServiceTest extends TestCase
 
     public function testUpdateRemovesOldCategoriesAndAddsNewOnes(): void
     {
+        $request = $this->createMock(Request::class);
         $oldCategory = new Category();
         $newCategory = new Category();
 
@@ -215,6 +343,11 @@ class ProductServiceTest extends TestCase
             ->method('find')
             ->with(999)
             ->willReturn($newCategory);
+
+        $this->productImageService->expects(self::once())
+            ->method('uploadFromRequest')
+            ->with($request)
+            ->willReturn(null);
 
         $this->entityManager->expects(self::once())
             ->method('flush');
@@ -230,7 +363,7 @@ class ProductServiceTest extends TestCase
             'price' => '100,00',
             'stock' => '10',
             'isActive' => '1',
-        ], ['999']);
+        ], ['999'], $request);
 
         self::assertSame(1, $product->getCategories()->count());
         self::assertTrue($product->getCategories()->contains($newCategory));
@@ -315,9 +448,33 @@ class ProductServiceTest extends TestCase
         self::assertCount(1, $result);
     }
 
-    public function testDeleteRemovesProductFromDatabase(): void
+    public function testDeleteRemovesProductAndImageFromDatabase(): void
+    {
+        $imagePath = '/uploads/products/image123.jpg';
+        $product = new Product();
+        $product->setImagePath($imagePath);
+
+        $this->productImageService->expects(self::once())
+            ->method('delete')
+            ->with($imagePath);
+
+        $this->entityManager->expects(self::once())
+            ->method('remove')
+            ->with($product);
+
+        $this->entityManager->expects(self::once())
+            ->method('flush');
+
+        $this->service->delete($product);
+    }
+
+    public function testDeleteRemovesProductWhenNoImageAttached(): void
     {
         $product = new Product();
+
+        $this->productImageService->expects(self::once())
+            ->method('delete')
+            ->with(null);
 
         $this->entityManager->expects(self::once())
             ->method('remove')

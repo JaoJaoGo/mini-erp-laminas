@@ -82,18 +82,18 @@ Os testes cobrem todas as camadas da aplicação:
 - **Controllers** — Testes de integração para lógica de requisição/resposta
   - `AuthControllerTest` — Login, logout, redirecionamentos
   - `CategoryControllerTest` — CRUD, filtros, erros 404
-  - `ProductControllerTest` — CRUD, validações, sincronização de categorias
+  - `ProductControllerTest` — CRUD, validações, sincronização de categorias, upload de imagens
   - `ApplicationControllerTest` — Autenticação e rotas públicas
 
 - **Services** — Testes unitários de lógica de negócio
   - `AuthServiceTest` — Autenticação, sessão, busca de usuário
   - `CategoryServiceTest` — Operações CRUD, persistência
-  - `ProductServiceTest` — Normalização, sincronização, filtros
+  - `ProductServiceTest` — Normalização, sincronização, filtros, upload e deleção de imagens
   - `MetricServiceTest` — Agregações e contagens
 
 - **Forms** — Testes de validação
   - `CategoryFormTest` — Validação de campos obrigatórios
-  - `ProductFormTest` — Validação de preço, estoque
+  - `ProductFormTest` — Validação de preço, estoque, campo de imagem com enctype
 
 - **Repositories** — Testes de consultas customizadas
   - `CategoryRepositoryTest` — Filtros, agrupamento
@@ -111,7 +111,7 @@ composer test
 vendor/bin/phpunit
 
 # Testes específicos
-vendor/bin/phpunit module/Application/test/Controller/CategoryControllerTest.php
+vendor/bin/phpunit module/Application/test/Controller/ProductControllerTest.php
 
 # Com relatório legível
 vendor/bin/phpunit --testdox
@@ -122,7 +122,7 @@ vendor/bin/phpunit --coverage-html coverage/
 
 ### Cobertura de testes
 
-A aplicação possui **73 testes** com **210+ assertions** cobrindo:
+A aplicação possui **85 testes** com **250+ assertions** cobrindo:
 
 - ✅ Fluxos de autenticação (login, logout, redirecionamento)
 - ✅ CRUD completo (create, read, update, delete)
@@ -132,6 +132,9 @@ A aplicação possui **73 testes** com **210+ assertions** cobrindo:
 - ✅ Casos de erro (404, validação inválida)
 - ✅ Normalização de dados (moeda, IDs)
 - ✅ Queries customizadas do Doctrine
+- ✅ **Upload de imagens** — Formatos válidos, tamanho máximo, tratamento de erros
+- ✅ **Substituição de imagens** — Delete de arquivo antigo, conservação de imagem atual
+- ✅ **Validação de arquivo** — MIME type, extensão, tamanho
 
 ## Análise estática
 

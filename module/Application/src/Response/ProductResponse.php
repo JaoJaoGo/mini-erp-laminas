@@ -47,6 +47,7 @@ class ProductResponse
             return [
                 'name' => '',
                 'description' => '',
+                'imagePath' => '',
                 'price' => '',
                 'stock' => '0',
                 'isActive' => '1',
@@ -57,6 +58,7 @@ class ProductResponse
         return [
             'name' => $product->getName(),
             'description' => $product->getDescription() ?? '',
+            'imagePath' => $product->getImagePath() ?? '',
             'price' => str_replace('.', ',', (string) $product->getPrice()),
             'stock' => (string) $product->getStock(),
             'isActive' => $product->isActive() ? '1' : '0',

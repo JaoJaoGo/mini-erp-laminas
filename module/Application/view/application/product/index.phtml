@@ -48,6 +48,13 @@ $rows = array_map(function ($product) use ($view) {
 
     return [
         'id' => $product->getId(),
+        'image' => $product->getImagePath()
+            ? sprintf(
+                '<img src="%s" alt="%s" style="width:56px; height:56px; object-fit:cover; border-radius:8px; border:1px solid #e5e7eb;">',
+                $view->escapeHtmlAttr($product->getImagePath()),
+                $view->escapeHtmlAttr($product->getName())
+            )
+            : '<span style="color:#9ca3af;">Sem imagem</span>',
         'name' => $product->getName(),
         'categories' => $categoryNames,
         'price' => 'R$ ' . number_format((float) $product->getPrice(), 2, ',', '.'),
@@ -74,6 +81,7 @@ $rows = array_map(function ($product) use ($view) {
 echo $this->partial('layout/listing-table', [
     'columns' => [
         ['key' => 'id', 'label' => 'ID'],
+        ['key' => 'image', 'label' => 'Imagem', 'type' => 'html'],
         ['key' => 'name', 'label' => 'Nome'],
         ['key' => 'categories', 'label' => 'Categorias', 'type' => 'badges-fade'],
         ['key' => 'price', 'label' => 'Preço'],

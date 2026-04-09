@@ -31,6 +31,9 @@ class Product
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $description = null;
 
+    #[ORM\Column(name: 'image_path', type: 'string', length: 255, nullable: true)]
+    private ?string $imagePath = null;
+
     #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
     private string $price = '0.00';
 
@@ -79,7 +82,6 @@ class Product
     {
         return $this->id;
     }
-
     public function setId(?int $id): self
     {
         $this->id = $id;
@@ -91,7 +93,6 @@ class Product
     {
         return $this->name;
     }
-
     public function setName(string $name): self
     {
         $this->name = trim($name);
@@ -103,7 +104,6 @@ class Product
     {
         return $this->description;
     }
-
     public function setDescription(?string $description): self
     {
         $description = $description !== null ? trim($description) : null;
@@ -113,11 +113,22 @@ class Product
         return $this;
     }
 
+    public function getImagePath(): ?string
+    {
+        return $this->imagePath;
+    }
+    public function setImagePath(?string $imagePath): self
+    {
+        $imagePath = $imagePath !== null ? trim($imagePath) : null;
+        $this->imagePath = $imagePath !== '' ? $imagePath : null;
+
+        return $this;
+    }
+
     public function getPrice(): string
     {
         return $this->price;
     }
-
     public function setPrice(string $price): self
     {
         $this->price = number_format((float) $price, 2, '.', '');
@@ -129,7 +140,6 @@ class Product
     {
         return $this->stock;
     }
-
     public function setStock(int $stock): self
     {
         $this->stock = max(0, $stock);
@@ -141,12 +151,10 @@ class Product
     {
         return $this->isActive;
     }
-
     public function getIsActive(): bool
     {
         return $this->isActive;
     }
-
     public function setIsActive(bool $isActive): self
     {
         $this->isActive = $isActive;
@@ -158,7 +166,6 @@ class Product
     {
         return $this->createdAt;
     }
-
     public function setCreatedAt(\DateTimeImmutable $createdAt): self
     {
         $this->createdAt = $createdAt;
@@ -170,7 +177,6 @@ class Product
     {
         return $this->updatedAt;
     }
-
     public function setUpdatedAt(\DateTimeImmutable $updatedAt): self
     {
         $this->updatedAt = $updatedAt;
@@ -185,7 +191,6 @@ class Product
     {
         return $this->categories;
     }
-
     /**
      * Compatibilidade com código legado.
      *
@@ -195,7 +200,6 @@ class Product
     {
         return $this->getCategories();
     }
-
     /**
      * @param Collection<int, Category> $categories
      */
@@ -205,7 +209,6 @@ class Product
 
         return $this;
     }
-
     public function addCategory(Category $category): self
     {
         if (!$this->categories->contains($category)) {
@@ -214,14 +217,12 @@ class Product
 
         return $this;
     }
-
     public function removeCategory(Category $category): self
     {
         $this->categories->removeElement($category);
 
         return $this;
     }
-
     public function clearCategories(): self
     {
         $this->categories->clear();

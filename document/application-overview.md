@@ -9,9 +9,11 @@ O Mini ERP Laminas é um projeto de estudo construído com Laminas MVC e Doctrin
 - Autenticação de usuário com login e logout.
 - Dashboard com informação do usuário autenticado.
 - CRUD de categorias.
-- CRUD de produtos.
+- CRUD de produtos com **upload de imagens**.
 - Filtragem por nome e categoria nas listagens.
 - Controle de acesso básico via sessão.
+- Validação de formatos de imagem (JPG, PNG, WEBP).
+- Sincronização de categorias em produtos.
 
 ## Estrutura principal
 
@@ -136,12 +138,24 @@ module/Application/test/
 
 ### Cobertura
 
-- **73 testes** com **210+ assertions**
-- Controllers: Fluxos de requisição, redirecionamentos, erros 404
-- Services: Lógica de negócio, persistência, sincronização
-- Forms: Validações e requisitos de campo
+- **85 testes** com **250+ assertions**
+- Controllers: Fluxos de requisição, redirecionamentos, erros 404, upload de imagens
+- Services: Lógica de negócio, persistência, sincronização, upload/deleção de imagens
+- Forms: Validações, requisitos de campo, suporte a multipart
 - Repositories: Queries customizadas do Doctrine
 - Module: Bootstrap e verificação de autenticação
+
+### Testes de upload de imagens
+
+A aplicação inclui testes específicos para o sistema de upload:
+
+- ✅ Upload bem-sucedido em createAction
+- ✅ Upload bem-sucedido em editAction
+- ✅ Substituição de imagem antiga em update
+- ✅ Limpeza de imagem ao deletar produto
+- ✅ Tratamento de exceções de upload (formato, tamanho)
+- ✅ Validação de formato de arquivo
+- ✅ Atributos e enctype do formulário
 
 ### Estratégia de testes
 

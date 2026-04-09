@@ -10,6 +10,8 @@ use Application\Form\ProductForm;
 use Application\Repository\CategoryRepository;
 use Application\Repository\ProductRepository;
 use Doctrine\ORM\EntityManager;
+use Laminas\Http\PhpEnvironment\Request;
+use Application\Service\ProductImageService;
 
 class ProductService
 {
@@ -17,6 +19,7 @@ class ProductService
         private readonly EntityManager $entityManager,
         private readonly ProductRepository $productRepository,
         private readonly CategoryRepository $categoryRepository,
+        private readonly ProductImageService $productImageService,
     ) { }
 
     /**
@@ -151,12 +154,18 @@ class ProductService
         }
     }
 
-    public function create(array $data, array $categoryIds): Product
+    public function create(array $data, array $categoryIds, Request $request): Product
     {
         $product = $this->createEmpty();
 
         $this->fillEntity($product, $data);
         $this->syncCategories($product, $categoryIds);
+
+        $imagePath = $this->productImageService->uploadFromRequest($request);
+
+        if ($imagePath !== null) {
+            $product->setImagePath($imagePath);
+        }
 
         $this->entityManager->persist($product);
         $this->entityManager->flush();
@@ -164,10 +173,19 @@ class ProductService
         return $product;
     }
 
-    public function update(Product $product, array $data, array $categoryIds): Product
+    public function update(Product $product, array $data, array $categoryIds, Request $request): Product
     {
+        $oldImagePath = $product->getImagePath();
+
         $this->fillEntity($product, $data);
         $this->syncCategories($product, $categoryIds);
+
+        $newImagePath = $this->productImageService->uploadFromRequest($request);
+        if ($newImagePath !== null && $newImagePath !== $oldImagePath) {
+            $product->setImagePath($newImagePath);
+            $this->productImageService->delete($oldImagePath);
+        }
+
         $this->entityManager->flush();
 
         return $product;
@@ -175,6 +193,8 @@ class ProductService
 
     public function delete(Product $product): void
     {
+        $this->productImageService->delete($product->getImagePath());
+
         $this->entityManager->remove($product);
         $this->entityManager->flush();
     }

@@ -13,6 +13,7 @@ use Laminas\Http\Request;
 use Laminas\Http\Response;
 use Laminas\Mvc\Controller\AbstractActionController;
 use Laminas\View\Model\ViewModel;
+use RuntimeException;
 
 class ProductController extends AbstractActionController
 {
@@ -52,12 +53,16 @@ class ProductController extends AbstractActionController
             );
         }
 
-        $data = $request->getPost()->toArray();
-        $data['categories'] = $this->productService->normalizeCategoryIds($data['categories'] ?? []);
-        $form->setData($data);
+        $postData = $request->getPost()->toArray();
+        $fileData = $request->getFiles()->toArray();
+
+        $postData['categories'] = $this->productService->normalizeCategoryIds($postData['categories'] ?? []);
+        $formData = array_merge($postData, $fileData);
+
+        $form->setData($formData);
 
         if (!$form->isValid()) {
-            $this->productService->appendCategoryValidationError($form, $data['categories']);
+            $this->productService->appendCategoryValidationError($form, $postData['categories']);
 
             return $this->productResponse->form(
                 user: $this->authService->getAuthenticatedUser(),
@@ -70,7 +75,20 @@ class ProductController extends AbstractActionController
         /** @var array{name:string, description:mixed, price:mixed, stock:mixed, isActive:mixed} $validatedData */
         $validatedData = $form->getData();
 
-        $this->productService->create($validatedData, $data['categories']);
+        try {
+            $this->productService->create($validatedData, $postData['categories'], $request);
+        } catch (RuntimeException $exception) {
+            $form->get('image')->setMessages([
+                'uploadError' => $exception->getMessage(),
+            ]);
+
+            return $this->productResponse->form(
+                user: $this->authService->getAuthenticatedUser(),
+                form: $form,
+                categories: $categories,
+                product: null,
+            );
+        }
 
         return $this->redirect()->toRoute('product');
     }
@@ -99,12 +117,16 @@ class ProductController extends AbstractActionController
             );
         }
 
-        $data = $request->getPost()->toArray();
-        $data['categories'] = $this->productService->normalizeCategoryIds($data['categories'] ?? []);
-        $form->setData($data);
+        $postData = $request->getPost()->toArray();
+        $fileData = $request->getFiles()->toArray();
+
+        $postData['categories'] = $this->productService->normalizeCategoryIds($postData['categories'] ?? []);
+        $formData = array_merge($postData, $fileData);
+
+        $form->setData($formData);
 
         if (!$form->isValid()) {
-            $this->productService->appendCategoryValidationError($form, $data['categories']);
+            $this->productService->appendCategoryValidationError($form, $postData['categories']);
 
             return $this->productResponse->form(
                 user: $this->authService->getAuthenticatedUser(),
@@ -117,7 +139,20 @@ class ProductController extends AbstractActionController
         /** @var array{name:string, description:mixed, price:mixed, stock:mixed, isActive:mixed} $validatedData */
         $validatedData = $form->getData();
 
-        $this->productService->update($product, $validatedData, $data['categories']);
+        try {
+            $this->productService->update($product, $validatedData, $postData['categories'], $request);
+        } catch (RuntimeException $exception) {
+            $form->get('image')->setMessages([
+                'uploadError' => $exception->getMessage(),
+            ]);
+
+            return $this->productResponse->form(
+                user: $this->authService->getAuthenticatedUser(),
+                form: $form,
+                categories: $categories,
+                product: $product,
+            );
+        }
 
         return $this->redirect()->toRoute('product');
     }

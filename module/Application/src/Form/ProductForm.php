@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace Application\Form;
 
 use Laminas\Form\Element\Csrf;
+use Laminas\Form\Element\File;
 use Laminas\Form\Element\Hidden;
 use Laminas\Form\Element\Number;
 use Laminas\Form\Element\Select;
 use Laminas\Form\Element\Text;
 use Laminas\Form\Element\Textarea;
 use Laminas\Form\Form;
+use Laminas\InputFilter\FileInput;
 use Laminas\InputFilter\InputFilter;
 use Laminas\Validator\Callback;
 use Laminas\Validator\NotEmpty;
@@ -23,6 +25,7 @@ class ProductForm extends Form
         parent::__construct($name);
 
         $this->setAttribute('method', 'post');
+        $this->setAttribute('enctype', 'multipart/form-data');
 
         $this->add([
             'name' => 'name',
@@ -45,6 +48,18 @@ class ProductForm extends Form
             'attributes' => [
                 'id' => 'description',
                 'rows' => 5,
+            ],
+        ]);
+
+        $this->add([
+            'name' => 'image',
+            'type' => File::class,
+            'options' => [
+                'label' => 'Imagem',
+            ],
+            'attributes' => [
+                'id' => 'image',
+                'accept' => '.jpg, .jpeg, .png, .webp,image/jpeg,image/png,image/webp',
             ],
         ]);
 
@@ -141,6 +156,30 @@ class ProductForm extends Form
                 ['name' => 'StringTrim'],
             ],
         ]);
+
+        $fileInput = new FileInput('image');
+        $fileInput->setRequired(false);
+        $fileInput->getValidatorChain()
+            ->attachByName('FileExtension', [
+                'extension' => ['jpg', 'jpeg', 'png', 'webp'],
+                'messages' => [
+                    \Laminas\Validator\File\Extension::FALSE_EXTENSION => 'Envie uma imagem JPG, JPEG, PNG ou WEBP.',
+                ],
+            ])
+            ->attachByName('FileMimeType', [
+                'mimeType' => ['image/jpeg', 'image/png', 'image/webp'],
+                'messages' => [
+                    \Laminas\Validator\File\MimeType::FALSE_TYPE => 'O arquivo enviado não é uma imagem válida.',
+                ],
+            ])
+            ->attachByName('FileSize', [
+                'max' => '5MB',
+                'messages' => [
+                    \Laminas\Validator\File\Size::TOO_BIG => 'A imagem deve ter no máximo 5MB.',
+                ],
+            ]);
+
+        $inputFilter->add($fileInput);
 
         $inputFilter->add([
             'name' => 'price',
