@@ -1,25 +1,31 @@
 <?php
+
 declare(strict_types=1);
 
-/** @var \Application\Form\LoginForm $form */
+/** @var \Application\Form\RegisterForm $form */
 $form = $this->form;
 
 $form->prepare();
 
+$nameElement = $form->get('name');
 $emailElement = $form->get('email');
 $passwordElement = $form->get('password');
+$passwordConfirmationElement = $form->get('password_confirmation');
 $csrfElement = $form->get('csrf');
 $submitElement = $form->get('submit');
 
+$nameElement->setAttribute('style', 'width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px;');
 $emailElement->setAttribute('style', 'width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px;');
 $passwordElement->setAttribute('style', 'width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px;');
+$passwordConfirmationElement->setAttribute('style', 'width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px;');
 $submitElement->setAttribute('style', 'width: 100%; padding: 12px; border: 0; border-radius: 8px; background: #1d4ed8; color: #fff; cursor: pointer;');
+
 ?>
 
 <?= $this->partial('layout/header') ?>
 
 <div class="container" style="max-width: 420px; margin: 60px auto;">
-    <h1 style="margin-bottom: 24px;">Login</h1>
+    <h1 style="margin-bottom: 24px;">Criar conta</h1>
 
     <?php if ($this->flashMessenger()->hasErrorMessages()): ?>
         <div style="background: #f8d7da; color: #842029; padding: 12px; border-radius: 8px; margin-bottom: 16px;">
@@ -31,6 +37,22 @@ $submitElement->setAttribute('style', 'width: 100%; padding: 12px; border: 0; bo
 
     <?= $this->form()->openTag($form) ?>
         <?= $this->formHidden($csrfElement) ?>
+
+        <div style="margin-bottom: 16px;">
+            <label for="<?= $this->escapeHtmlAttr($nameElement->getAttribute('id')) ?>">
+                <?= $this->escapeHtml($nameElement->getLabel()) ?>
+            </label>
+
+            <?= $this->formText($nameElement) ?>
+
+            <?php if ($nameElement->getMessages()): ?>
+                <div style="margin-top: 6px; color: #b91c1c; font-size: 14px;">
+                    <?php foreach ($nameElement->getMessages() as $message): ?>
+                        <div><?= $this->escapeHtml($message) ?></div>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </div>
 
         <div style="margin-bottom: 16px;">
             <label for="<?= $this->escapeHtmlAttr($emailElement->getAttribute('id')) ?>">
@@ -64,12 +86,28 @@ $submitElement->setAttribute('style', 'width: 100%; padding: 12px; border: 0; bo
             <?php endif; ?>
         </div>
 
+        <div style="margin-bottom: 16px;">
+            <label for="<?= $this->escapeHtmlAttr($passwordConfirmationElement->getAttribute('id')) ?>">
+                <?= $this->escapeHtml($passwordConfirmationElement->getLabel()) ?>
+            </label>
+
+            <?= $this->formPassword($passwordConfirmationElement) ?>
+
+            <?php if ($passwordConfirmationElement->getMessages()): ?>
+                <div style="margin-top: 6px; color: #b91c1c; font-size: 14px;">
+                    <?php foreach ($passwordConfirmationElement->getMessages() as $message): ?>
+                        <div><?= $this->escapeHtml($message) ?></div>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </div>
+
         <?= $this->formSubmit($submitElement) ?>
     <?= $this->form()->closeTag() ?>
 
     <div style="margin-top: 16px; text-align: center;">
-        <a href="<?= $this->url('register') ?>" style="color: #1d4ed8; text-decoration: none;">
-            Não tem conta? Criar conta
+        <a href="<?= $this->url('login') ?>" style="color: #1d4ed8; text-decoration: none;">
+            Já tem conta? Entrar
         </a>
     </div>
 </div>

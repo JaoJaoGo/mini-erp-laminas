@@ -1,0 +1,103 @@
+<?php
+
+declare(strict_types=1);
+
+/**
+ * Espera receber:
+ * - string $route
+ * - int $page
+ * - int $totalPages
+ * - int $total
+ * - array $queryParams
+ */
+
+$route = $route ?? '';
+$page = max(1, (int) ($page ?? 1));
+$totalPages = max(1, (int) ($totalPages ?? 1));
+$total = max(0, (int) ($total ?? 0));
+$queryParams = is_array($queryParams ?? null) ? $queryParams : [];
+
+if ($totalPages <= 1 && $total === 0) {
+    return;
+}
+
+$buildPageUrl = function (int $targetPage) use ($route, $queryParams): string {
+    $params = array_filter(
+        array_merge($queryParams, ['page' => $targetPage]),
+        static fn ($value) => $value !== null && $value !== ''
+    );
+
+    return $this->url($route, [], ['query' => $params]);
+};
+
+$startPage = max(1, $page - 2);
+$endPage = min($totalPages, $page + 2);
+
+if ($endPage - $startPage < 4) {
+    if ($startPage === 1) {
+        $endPage = min($totalPages, $startPage + 4);
+    } elseif ($endPage === $totalPages) {
+        $startPage = max(1, $endPage - 4);
+    }
+}
+?>
+
+<div
+    style="
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        gap:16px;
+        flex-wrap:wrap;
+        background:#fff;
+        margin:20px;
+        padding:16px 20px;
+        border:1px solid #e5e7eb;
+        border-radius:16px;
+        box-shadow:0 10px 30px rgba(0,0,0,0.06);
+    "
+>
+    <div style="color:#6b7280; font-size:14px;">
+        <?= $this->escapeHtml(sprintf('Total de registros: %d', $total)) ?>
+    </div>
+
+    <?php if ($totalPages > 1): ?>
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <?php if ($page > 1): ?>
+                <a
+                    href="<?= $this->escapeHtmlAttr($buildPageUrl($page - 1)) ?>"
+                    style="padding:8px 12px; border-radius:8px; border:1px solid #d1d5db; text-decoration:none; color:#111827; background:#fff;"
+                >
+                    Anterior
+                </a>
+            <?php endif; ?>
+
+            <?php for ($i = $startPage; $i <= $endPage; $i++): ?>
+                <?php $isCurrent = $i === $page; ?>
+                <a
+                    href="<?= $this->escapeHtmlAttr($buildPageUrl($i)) ?>"
+                    style="
+                        padding:8px 12px;
+                        border-radius:8px;
+                        border:1px solid <?= $isCurrent ? '#2563eb' : '#d1d5db' ?>;
+                        text-decoration:none;
+                        color:<?= $isCurrent ? '#fff' : '#111827' ?>;
+                        background:<?= $isCurrent ? '#2563eb' : '#fff' ?>;
+                        font-weight:<?= $isCurrent ? '700' : '500' ?>;
+                    "
+                >
+                    <?= $this->escapeHtml((string) $i) ?>
+                </a>
+            <?php endfor; ?>
+
+            <?php if ($page < $totalPages): ?>
+                <a
+                    href="<?= $this->escapeHtmlAttr($buildPageUrl($page + 1)) ?>"
+                    style="padding:8px 12px; border-radius:8px; border:1px solid #d1d5db; text-decoration:none; color:#111827; background:#fff;"
+                >
+                    Próxima
+                </a>
+            <?php endif; ?>
+        </div>
+    <?php endif; ?>
+</div>

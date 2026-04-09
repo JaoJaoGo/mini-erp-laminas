@@ -80,24 +80,26 @@ mini-erp-laminas/
 Os testes cobrem todas as camadas da aplicação:
 
 - **Controllers** — Testes de integração para lógica de requisição/resposta
-  - `AuthControllerTest` — Login, logout, redirecionamentos
-  - `CategoryControllerTest` — CRUD, filtros, erros 404
-  - `ProductControllerTest` — CRUD, validações, sincronização de categorias, upload de imagens
+  - `AuthControllerTest` — Login, logout, redirecionamentos, **cadastro de usuários**
+  - `CategoryControllerTest` — CRUD, filtros, erros 404, **paginação**
+  - `ProductControllerTest` — CRUD, validações, sincronização de categorias, upload de imagens, **paginação**
   - `ApplicationControllerTest` — Autenticação e rotas públicas
 
 - **Services** — Testes unitários de lógica de negócio
   - `AuthServiceTest` — Autenticação, sessão, busca de usuário
-  - `CategoryServiceTest` — Operações CRUD, persistência
-  - `ProductServiceTest` — Normalização, sincronização, filtros, upload e deleção de imagens
-  - `MetricServiceTest` — Agregações e contagens
+  - `UserServiceTest` — **Verificação de email único, criação de usuários**
+  - `CategoryServiceTest` — Operações CRUD, persistência, **soft delete**
+  - `ProductServiceTest` — Normalização, sincronização, filtros, upload e deleção de imagens, **soft delete**
+  - `MetricServiceTest` — Agregações e contagens, **filtragem por soft delete**
 
 - **Forms** — Testes de validação
   - `CategoryFormTest` — Validação de campos obrigatórios
   - `ProductFormTest` — Validação de preço, estoque, campo de imagem com enctype
+  - `RegisterFormTest` — **Validação de cadastro de usuários (nome, email, senha)**
 
 - **Repositories** — Testes de consultas customizadas
-  - `CategoryRepositoryTest` — Filtros, agrupamento
-  - `ProductRepositoryTest` — Filtros por categoria, contagem por status
+  - `CategoryRepositoryTest` — Filtros, agrupamento, **paginação**
+  - `ProductRepositoryTest` — Filtros por categoria, contagem por status, **paginação**
 
 - **Module** — Testes de configuração e bootstrap
   - `ModuleTest` — Verificação de autenticação, configuração
@@ -122,10 +124,13 @@ vendor/bin/phpunit --coverage-html coverage/
 
 ### Cobertura de testes
 
-A aplicação possui **85 testes** com **250+ assertions** cobrindo:
+A aplicação possui **106 testes** com **291 assertions** cobrindo:
 
 - ✅ Fluxos de autenticação (login, logout, redirecionamento)
+- ✅ **Cadastro de usuários** (registro, validação de email único)
 - ✅ CRUD completo (create, read, update, delete)
+- ✅ **Soft delete** (exclusão lógica, filtragem automática)
+- ✅ **Paginação** (Doctrine Paginator, parâmetros de query)
 - ✅ Validações de formulário
 - ✅ Filtros de listagem
 - ✅ Sincronização de relacionamentos (categorias-produtos)

@@ -16,18 +16,25 @@ class CategoryService
     ) { }
 
     /**
-     * @return list<Category>
+     * @return array{
+     *     items: list<Category>,
+     *     total: int,
+     *     page: int,
+     *     perPage: int,
+     *     totalPages: int
+     * }
      */
-    public function getFilteredCategories(string $name = ''): array
-    {
-        return $this->categoryRepository->findFiltered($name);
+    public function getFilteredCategoriesPaginated(
+        string $name = '',
+        int $page = 1,
+        int $perPage = 10
+    ): array {
+        return $this->categoryRepository->findFilteredPaginated($name, $page, $perPage);
     }
 
     public function findById(int $id): ?Category
     {
-        $category = $this->categoryRepository->find($id);
-
-        return $category instanceof Category ? $category : null;
+        return $this->categoryRepository->findActiveById($id);
     }
 
     public function createEmpty(): Category
@@ -57,7 +64,11 @@ class CategoryService
 
     public function delete(Category $category): void
     {
-        $this->entityManager->remove($category);
+        if ($category->isDeleted()) {
+            return;
+        }
+
+        $category->softDelete();
         $this->entityManager->flush();
     }
 

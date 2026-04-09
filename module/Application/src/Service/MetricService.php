@@ -20,8 +20,14 @@ class MetricService
 
     public function getDashboardData(): array
     {
-        $totalCategories = (int) $this->entityManager->getRepository(Category::class)->count([]);
-        $totalProducts = (int) $this->entityManager->getRepository(Product::class)->count([]);
+        $totalCategories = (int) $this->entityManager->getRepository(Category::class)
+            ->count([
+                'deletedAt' => null,
+            ]);
+        $totalProducts = (int) $this->entityManager->getRepository(Product::class)
+            ->count([
+                'deletedAt' => null,
+            ]);
 
         return [
             'totalCategories' => $totalCategories,

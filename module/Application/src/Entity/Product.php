@@ -49,6 +49,9 @@ class Product
     #[ORM\Column(type: 'datetime_immutable')]
     private \DateTimeImmutable $updatedAt;
 
+    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $deletedAt = null;
+
     /**
      * @var Collection<int, Category>
      */
@@ -182,6 +185,33 @@ class Product
         $this->updatedAt = $updatedAt;
 
         return $this;
+    }
+
+    public function getDeletedAt(): ?\DateTimeImmutable
+    {
+        return $this->deletedAt;
+    }
+    public function setDeletedAt(?\DateTimeImmutable $deletedAt): self
+    {
+        $this->deletedAt = $deletedAt;
+
+        return $this;
+    }
+    public function softDelete(): self
+    {
+        $this->deletedAt = new \DateTimeImmutable();
+
+        return $this;
+    }
+    public function restore(): self
+    {
+        $this->deletedAt = null;
+
+        return $this;
+    }
+    public function isDeleted(): bool
+    {
+        return $this->deletedAt !== null;
     }
 
     /**

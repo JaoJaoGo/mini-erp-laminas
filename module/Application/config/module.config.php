@@ -13,14 +13,17 @@ use Application\Controller\HomeController;
 use Application\Controller\CategoryController;
 use Application\Controller\ProductController;
 use Application\Form\LoginForm;
+use Application\Form\RegisterForm;
 use Application\Form\CategoryForm;
 use Application\Form\ProductForm;
 use Application\Service\AuthService;
+use Application\Service\UserService;
 use Application\Service\MetricService;
 use Application\Service\CategoryService;
 use Application\Service\ProductService;
 use Application\Service\ProductImageService;
 use Application\Service\Factory\AuthServiceFactory;
+use Application\Service\Factory\UserServiceFactory;
 use Application\Service\Factory\MetricServiceFactory;
 use Application\Service\Factory\CategoryServiceFactory;
 use Application\Service\Factory\ProductServiceFactory;
@@ -50,7 +53,16 @@ return [
                     ],
                 ],
             ],
-
+            'register' => [
+                'type' => Literal::class,
+                'options' => [
+                    'route' => '/register',
+                    'defaults' => [
+                        'controller' => AuthController::class,
+                        'action' => 'register',
+                    ],
+                ],
+            ],
             'logout' => [
                 'type' => Literal::class,
                 'options' => [
@@ -228,6 +240,7 @@ return [
     'service_manager' => [
         'factories' => [
             AuthService::class => AuthServiceFactory::class,
+            UserService::class => UserServiceFactory::class,
             MetricService::class => MetricServiceFactory::class,
             CategoryService::class => CategoryServiceFactory::class,
             CategoryRepository::class => CategoryRepositoryFactory::class,
@@ -237,6 +250,7 @@ return [
             ProductRepository::class => ProductRepositoryFactory::class,
             ProductResponse::class => ProductResponseFactory::class,
             LoginForm::class => InvokableFactory::class,
+            RegisterForm::class => InvokableFactory::class,
             ProductForm::class => InvokableFactory::class,
             CategoryForm::class => InvokableFactory::class,
         ],
@@ -260,8 +274,10 @@ return [
             'layout/listing-table' => __DIR__ . '/../view/layout/listing-table.phtml',
             'layout/listing-toolbar' => __DIR__ . '/../view/layout/listing-toolbar.phtml',
             'layout/modal-delete' => __DIR__ . '/../view/layout/modal-delete.phtml',
+            'layout/pagination' => __DIR__ . '/../view/layout/pagination.phtml',
             'layout/chart/pie-chart' => __DIR__ . '/../view/layout/chart/pie-chart.phtml',
             'application/auth/login' => __DIR__ . '/../view/application/auth/login.phtml',
+            'application/auth/register' => __DIR__ . '/../view/application/auth/register.phtml',
             'application/home/home' => __DIR__ . '/../view/application/home/home.phtml',
             'application/category/index' => __DIR__ . '/../view/application/category/index.phtml',
             'application/category/form' => __DIR__ . '/../view/application/category/form.phtml',

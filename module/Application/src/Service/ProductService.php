@@ -23,18 +23,26 @@ class ProductService
     ) { }
 
     /**
-     * @return list<Product>
+     * @return array{
+     *     items: list<Product>,
+     *     total: int,
+     *     page: int,
+     *     perPage: int,
+     *     totalPages: int
+     * }
      */
-    public function getFilteredProducts(string $name = '', string $category = ''): array
-    {
-        return $this->productRepository->findFiltered($name, $category);
+    public function getFilteredProductsPaginated(
+        string $name = '',
+        string $category = '',
+        int $page = 1,
+        int $perPage = 10
+    ): array {
+        return $this->productRepository->findFilteredPaginated($name, $category, $page, $perPage);
     }
 
     public function findById(int $id): ?Product
     {
-        $product = $this->productRepository->find($id);
-
-        return $product instanceof Product ? $product : null;
+        return $this->productRepository->findActiveById($id);
     }
 
     public function createEmpty(): Product
@@ -47,8 +55,12 @@ class ProductService
      */
     public function getCategoriesForForm(): array
     {
+        $qb = $this->categoryRepository->createQueryBuilder('c');
+        $qb->andWhere('c.deletedAt IS NULL');
+        $qb->orderBy('c.name', 'ASC');
+
         /** @var list<Category> $categories */
-        $categories = $this->categoryRepository->createQueryBuilder('c')->orderBy('c.name', 'ASC')->getQuery()->getResult();
+        $categories = $qb->getQuery()->getResult();
 
         return $categories;
     }
@@ -193,9 +205,11 @@ class ProductService
 
     public function delete(Product $product): void
     {
-        $this->productImageService->delete($product->getImagePath());
+        if ($product->isDeleted()) {
+            return;
+        }
 
-        $this->entityManager->remove($product);
+        $product->softDelete();
         $this->entityManager->flush();
     }
 }

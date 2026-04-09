@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace Application\Controller;
 
 use Application\Form\LoginForm;
+use Application\Form\RegisterForm;
 use Application\Service\AuthService;
+use Application\Service\UserService;
 use Laminas\Http\Request;
+use Laminas\Http\Response;
 use Laminas\Mvc\Controller\AbstractActionController;
 use Laminas\View\Model\ViewModel;
 
@@ -25,6 +28,8 @@ class AuthController extends AbstractActionController
     public function __construct(
         private readonly AuthService $authService,
         private readonly LoginForm $loginForm,
+        private readonly RegisterForm $registerForm,
+        private readonly UserService $userService,
     ) { }
 
     public function loginAction(): ViewModel|\Laminas\Http\Response
@@ -71,7 +76,56 @@ class AuthController extends AbstractActionController
         return $this->redirect()->toRoute('home');
     }
 
-    public function logoutAction(): \Laminas\Http\Response
+    public function registerAction(): ViewModel|Response
+    {
+        if ($this->authService->isAuthenticated()) {
+            return $this->redirect()->toRoute('home');
+        }
+
+        $form = clone $this->registerForm;
+        $request = $this->getRequest();
+
+        if (!$request instanceof Request || !$request->isPost()) {
+            return (new ViewModel([
+                'form' => $form,
+            ]))->setTemplate('application/auth/register');
+        }
+
+        $data = $request->getPost()->toArray();
+        $form->setData($data);
+
+        if (!$form->isValid()) {
+            $this->flashMessenger()->addErrorMessage('Preencha os campos corretamente.');
+
+            return (new ViewModel([
+                'form' => $form,
+            ]))->setTemplate('application/auth/register');
+        }
+
+        $validatedData = $form->getData();
+
+        if ($this->userService->emailExists($validatedData['email'])) {
+            $form->get('email')->setMessages([
+                'emailExists' => 'Já existe um usuário cadastrado com este e-mail.',
+            ]);
+
+            return (new ViewModel([
+                'form' => $form,
+            ]))->setTemplate('application/auth/register');
+        }
+
+        $this->userService->create(
+            $validatedData['name'],
+            $validatedData['email'],
+            $validatedData['password'],
+        );
+
+        $this->flashMessenger()->addSuccessMessage('Conta criada com sucesso. Agora você pode entrar.');
+
+        return $this->redirect()->toRoute('login');
+    }
+
+    public function logoutAction(): Response
     {
         $this->authService->logout();
 

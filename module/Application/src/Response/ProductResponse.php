@@ -6,8 +6,8 @@ namespace Application\Response;
 
 use Application\Entity\Category;
 use Application\Entity\Product;
-use Application\Form\ProductForm;
 use Application\Entity\User;
+use Application\Form\ProductForm;
 use Laminas\View\Model\ViewModel;
 
 class ProductResponse
@@ -15,13 +15,20 @@ class ProductResponse
     /**
      * @param list<Product> $products
      * @param array{name:string, category:string} $filters
+     * @param array{
+     *     total:int,
+     *     page:int,
+     *     perPage:int,
+     *     totalPages:int
+     * } $pagination
      */
-    public function index(?User $user, array $products, array $filters): ViewModel
+    public function index(?User $user, array $products, array $filters, array $pagination): ViewModel
     {
         return new ViewModel([
             'user' => $user,
             'products' => $products,
             'filters' => $filters,
+            'pagination' => $pagination,
         ]);
     }
 
@@ -77,6 +84,28 @@ class ProductResponse
         return [
             'name' => $name,
             'category' => $category,
+        ];
+    }
+
+    /**
+     * @return array{
+     *      total: int,
+     *      page: int,
+     *      perPage: int,
+     *      totalPages: int
+     * }
+     */
+    public function createPagination(
+        int $total,
+        int $page,
+        int $perPage,
+        int $totalPages
+    ): array {
+        return [
+            'total' => $total,
+            'page' => $page,
+            'perPage' => $perPage,
+            'totalPages' => $totalPages,
         ];
     }
 }

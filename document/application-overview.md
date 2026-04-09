@@ -6,11 +6,11 @@ O Mini ERP Laminas é um projeto de estudo construído com Laminas MVC e Doctrin
 
 ## Recursos principais
 
-- Autenticação de usuário com login e logout.
+- **Autenticação de usuário** com login, logout e **cadastro de usuários**.
 - Dashboard com informação do usuário autenticado.
-- CRUD de categorias.
-- CRUD de produtos com **upload de imagens**.
-- Filtragem por nome e categoria nas listagens.
+- **CRUD de categorias** com **soft delete** e **paginação**.
+- **CRUD de produtos** com **soft delete**, **paginação** e upload de imagens.
+- Filtragem por nome e categoria nas listagens com paginação.
 - Controle de acesso básico via sessão.
 - Validação de formatos de imagem (JPG, PNG, WEBP).
 - Sincronização de categorias em produtos.
@@ -32,20 +32,22 @@ O Mini ERP Laminas é um projeto de estudo construído com Laminas MVC e Doctrin
 
 ### Controle
 
-- `AuthController` — Gerencia login/logout.
+- `AuthController` — Gerencia login/logout e **cadastro de usuários**.
 - `HomeController` — Exibe dashboard e usuário autenticado.
-- `CategoryController` — Lista, cria, edita e exclui categorias.
-- `ProductController` — Lista, cria, edita e exclui produtos.
+- `CategoryController` — Lista, cria, edita e exclui categorias com **paginação**.
+- `ProductController` — Lista, cria, edita e exclui produtos com **paginação**.
 
 ### Serviço
 
 - `AuthService` — Autentica usuário, mantém sessão e recupera o usuário logado.
-- `CategoryService` — Lógica de negócio para operações com categorias.
-- `ProductService` — Lógica de negócio para operações com produtos.
+- `UserService` — Gerencia operações de usuários (verificação de email único, criação).
+- `CategoryService` — Lógica de negócio para operações com categorias e **paginação**.
+- `ProductService` — Lógica de negócio para operações com produtos e **paginação**.
 
 ### Formulário
 
 - `LoginForm` — Validação de e-mail, senha e token CSRF.
+- `RegisterForm` — Formulário de cadastro de usuários com validação.
 - `CategoryForm` — Formulário para criação e edição de categorias.
 - `ProductForm` — Formulário para criação e edição de produtos.
 
@@ -70,16 +72,17 @@ O Mini ERP Laminas é um projeto de estudo construído com Laminas MVC e Doctrin
 | Rota | Método | Função | Descrição |
 |---|---|---|---|
 | `/login` | GET/POST | `AuthController::loginAction` | Tela de login e processamento de credenciais |
+| `/register` | GET/POST | `AuthController::registerAction` | **Cadastro de novos usuários** |
 | `/logout` | GET | `AuthController::logoutAction` | Encerra sessão do usuário |
 | `/` | GET | `HomeController::homeAction` | Dashboard inicial |
-| `/categories` | GET | `CategoryController::indexAction` | Listagem de categorias |
+| `/categories` | GET | `CategoryController::indexAction` | **Listagem paginada de categorias** |
 | `/categories/create` | GET/POST | `CategoryController::createAction` | Cria uma nova categoria |
 | `/categories/:id/edit` | GET/POST | `CategoryController::editAction` | Edita categoria existente |
-| `/categories/:id/delete` | GET | `CategoryController::deleteAction` | Exclui categoria |
-| `/products` | GET | `ProductController::indexAction` | Listagem de produtos |
+| `/categories/:id/delete` | GET | `CategoryController::deleteAction` | **Exclui categoria (soft delete)** |
+| `/products` | GET | `ProductController::indexAction` | **Listagem paginada de produtos** |
 | `/products/create` | GET/POST | `ProductController::createAction` | Cria um produto |
 | `/products/:id/edit` | GET/POST | `ProductController::editAction` | Edita produto existente |
-| `/products/:id/delete` | GET | `ProductController::deleteAction` | Exclui produto |
+| `/products/:id/delete` | GET | `ProductController::deleteAction` | **Exclui produto (soft delete)** |
 
 > Observação: a rota `application` existe na configuração, mas a navegação principal usa `home`, `categories` e `products`.
 
@@ -91,6 +94,29 @@ O Mini ERP Laminas é um projeto de estudo construído com Laminas MVC e Doctrin
 4. Se o usuário existir e estiver ativo, o serviço salva `userId`, `userName` e `userEmail` na sessão.
 5. Rotas privadas são protegidas em `Module::checkAuthentication`.
 6. Se não autenticado, o usuário é redirecionado para `/login`.
+
+## Funcionalidades Recentes
+
+### Cadastro de Usuários
+
+- **Rota**: `/register`
+- **Funcionalidade**: Permite que novos usuários se cadastrem no sistema
+- **Validações**: Nome, email único, senha com confirmação, proteção CSRF
+- **Componentes**: `RegisterForm`, `UserService`, método `registerAction` no `AuthController`
+
+### Soft Delete
+
+- **Implementação**: Adicionado campo `deletedAt` nas entidades `Category` e `Product`
+- **Métodos**: `softDelete()` e `isDeleted()` nas entidades
+- **Comportamento**: Exclusões não removem registros do banco, apenas marcam como excluídos
+- **Filtragem**: Todas as consultas filtram registros onde `deletedAt IS NULL`
+
+### Paginação
+
+- **Implementação**: Usando Doctrine Paginator com paginação baseada em query parameters
+- **Parâmetros**: `page` (página atual), `perPage` (itens por página)
+- **Estrutura de resposta**: Array com `items`, `total`, `page`, `perPage`, `totalPages`
+- **Aplicado em**: Listagens de categorias e produtos
 
 ## Interface
 

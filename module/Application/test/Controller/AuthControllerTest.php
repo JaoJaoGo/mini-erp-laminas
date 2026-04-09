@@ -6,7 +6,9 @@ namespace ApplicationTest\Controller;
 
 use Application\Controller\AuthController;
 use Application\Form\LoginForm;
+use Application\Form\RegisterForm;
 use Application\Service\AuthService;
+use Application\Service\UserService;
 use Laminas\Http\Request;
 use Laminas\Http\Response;
 use Laminas\Mvc\Controller\PluginManager;
@@ -21,13 +23,17 @@ class AuthControllerTest extends TestCase
 {
     private AuthService $authService;
     private LoginForm $loginForm;
+    private RegisterForm $registerForm;
+    private UserService $userService;
     private AuthController $controller;
 
     protected function setUp(): void
     {
         $this->authService = $this->createMock(AuthService::class);
         $this->loginForm = new LoginForm();
-        $this->controller = new AuthController($this->authService, $this->loginForm);
+        $this->registerForm = new RegisterForm();
+        $this->userService = $this->createMock(UserService::class);
+        $this->controller = new AuthController($this->authService, $this->loginForm, $this->registerForm, $this->userService);
         $this->controller->setPluginManager($this->createPluginManager());
         $this->controller->setEvent(new MvcEvent());
     }
@@ -129,6 +135,133 @@ class AuthControllerTest extends TestCase
 
         self::assertInstanceOf(Response::class, $result);
         self::assertSame(302, $result->getStatusCode());
+    }
+
+    public function testRegisterActionGetReturnsFormView(): void
+    {
+        $this->authService->expects(self::once())
+            ->method('isAuthenticated')
+            ->willReturn(false);
+
+        $request = new Request();
+        $request->setMethod(Request::METHOD_GET);
+        $this->setControllerRequest($request);
+
+        $result = $this->controller->registerAction();
+
+        self::assertInstanceOf(\Laminas\View\Model\ViewModel::class, $result);
+        self::assertArrayHasKey('form', $result->getVariables());
+        self::assertSame('application/auth/register', $result->getTemplate());
+    }
+
+    public function testRegisterActionRedirectsWhenAlreadyAuthenticated(): void
+    {
+        $this->authService->expects(self::once())
+            ->method('isAuthenticated')
+            ->willReturn(true);
+
+        $request = new Request();
+        $request->setMethod(Request::METHOD_GET);
+        $this->setControllerRequest($request);
+
+        $result = $this->controller->registerAction();
+
+        self::assertInstanceOf(Response::class, $result);
+        self::assertSame(302, $result->getStatusCode());
+    }
+
+    public function testRegisterActionPostValidRedirectsAndCreatesUser(): void
+    {
+        $this->authService->expects(self::once())
+            ->method('isAuthenticated')
+            ->willReturn(false);
+
+        $this->userService->expects(self::once())
+            ->method('emailExists')
+            ->with('newuser@example.com')
+            ->willReturn(false);
+
+        $this->userService->expects(self::once())
+            ->method('create')
+            ->with('João Silva', 'newuser@example.com', 'password123');
+
+        $form = clone $this->registerForm;
+        $data = [
+            'name' => 'João Silva',
+            'email' => 'newuser@example.com',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+            'csrf' => $form->get('csrf')->getValue(),
+        ];
+
+        $request = new Request();
+        $request->setMethod(Request::METHOD_POST);
+        $request->setPost(new Parameters($data));
+        $this->setControllerRequest($request);
+
+        $result = $this->controller->registerAction();
+
+        self::assertInstanceOf(Response::class, $result);
+        self::assertSame(302, $result->getStatusCode());
+    }
+
+    public function testRegisterActionPostInvalidReturnsFormView(): void
+    {
+        $this->authService->expects(self::once())
+            ->method('isAuthenticated')
+            ->willReturn(false);
+
+        $form = clone $this->registerForm;
+        $data = [
+            'name' => 'Jo',
+            'email' => 'invalid-email',
+            'password' => '123',
+            'password_confirmation' => 'different',
+            'csrf' => $form->get('csrf')->getValue(),
+        ];
+
+        $request = new Request();
+        $request->setMethod(Request::METHOD_POST);
+        $request->setPost(new Parameters($data));
+        $this->setControllerRequest($request);
+
+        $result = $this->controller->registerAction();
+
+        self::assertInstanceOf(\Laminas\View\Model\ViewModel::class, $result);
+        self::assertArrayHasKey('form', $result->getVariables());
+        self::assertSame('application/auth/register', $result->getTemplate());
+    }
+
+    public function testRegisterActionPostWithExistingEmailReturnsFormView(): void
+    {
+        $this->authService->expects(self::once())
+            ->method('isAuthenticated')
+            ->willReturn(false);
+
+        $this->userService->expects(self::once())
+            ->method('emailExists')
+            ->with('existing@example.com')
+            ->willReturn(true);
+
+        $form = clone $this->registerForm;
+        $data = [
+            'name' => 'João Silva',
+            'email' => 'existing@example.com',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+            'csrf' => $form->get('csrf')->getValue(),
+        ];
+
+        $request = new Request();
+        $request->setMethod(Request::METHOD_POST);
+        $request->setPost(new Parameters($data));
+        $this->setControllerRequest($request);
+
+        $result = $this->controller->registerAction();
+
+        self::assertInstanceOf(\Laminas\View\Model\ViewModel::class, $result);
+        self::assertArrayHasKey('form', $result->getVariables());
+        self::assertSame('application/auth/register', $result->getTemplate());
     }
 
     private function createPluginManager(): PluginManager

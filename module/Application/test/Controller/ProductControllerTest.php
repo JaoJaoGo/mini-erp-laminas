@@ -54,9 +54,15 @@ class ProductControllerTest extends TestCase
         $product->setName('Produto');
 
         $this->productService->expects(self::once())
-            ->method('getFilteredProducts')
-            ->with('Produto', 'Eletrônicos')
-            ->willReturn([$product]);
+            ->method('getFilteredProductsPaginated')
+            ->with('Produto', 'Eletrônicos', 1, 10)
+            ->willReturn([
+                'items' => [$product],
+                'total' => 1,
+                'page' => 1,
+                'perPage' => 10,
+                'totalPages' => 1,
+            ]);
 
         $request = new Request();
         $request->setQuery(new Parameters(['name' => 'Produto', 'category' => 'Eletrônicos']));

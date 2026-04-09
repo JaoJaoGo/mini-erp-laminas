@@ -42,12 +42,12 @@ class MetricServiceTest extends TestCase
 
         $categoryRepo->expects(self::once())
             ->method('count')
-            ->with([])
+            ->with(['deletedAt' => null])
             ->willReturn(7);
 
         $productRepo->expects(self::once())
             ->method('count')
-            ->with([])
+            ->with(['deletedAt' => null])
             ->willReturn(12);
 
         self::assertSame([

@@ -118,19 +118,8 @@ class AuthServiceTest extends TestCase
 
     public function testLogoutClearsAuthStorage(): void
     {
-        $storage = $this->createMock(ArrayStorage::class);
-        $storage->expects(self::once())
-            ->method('clear')
-            ->with('auth');
-
-        $manager = $this->createMock(SessionManager::class);
-        $manager->expects(self::once())
-            ->method('getStorage')
-            ->willReturn($storage);
-
-        $this->session->expects(self::once())
-            ->method('getManager')
-            ->willReturn($manager);
+        $this->session->expects(self::exactly(3))
+            ->method('offsetUnset');
 
         $this->authService->logout();
     }

@@ -5,18 +5,28 @@ declare(strict_types=1);
 namespace Application\Response;
 
 use Application\Entity\Category;
-use Application\Form\CategoryForm;
 use Application\Entity\User;
+use Application\Form\CategoryForm;
 use Laminas\View\Model\ViewModel;
 
 class CategoryResponse
 {
-    public function index(?User $user, array $categories, array $filters): ViewModel
+    /**
+     * @param list<Category> $category
+     * @param array{
+     *     total:int,
+     *     page:int,
+     *     perPage:int,
+     *     totalPages:int
+     * } $pagination
+     */
+    public function index(?User $user, array $categories, array $filters, array $pagination): ViewModel
     {
         return new ViewModel([
             'user' => $user,
             'categories' => $categories,
             'filters' => $filters,
+            'pagination' => $pagination,
         ]);
     }
 
@@ -41,6 +51,28 @@ class CategoryResponse
     {
         return [
             'name' => $name,
+        ];
+    }
+
+    /**
+     * @return array{
+     *      total: int,
+     *      page: int,
+     *      perPage: int,
+     *      totalPages: int
+     * }
+     */
+    public function createPagination(
+        int $total,
+        int $page,
+        int $perPage,
+        int $totalPages
+    ): array {
+        return [
+            'total' => $total,
+            'page' => $page,
+            'perPage' => $perPage,
+            'totalPages' => $totalPages,
         ];
     }
 }

@@ -37,6 +37,7 @@ class Module
 
         $publicRoutes = [
             'login',
+            'register',
         ];
 
         if (in_array($routeName, $publicRoutes, true)) {

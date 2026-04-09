@@ -36,6 +36,30 @@ class CategoryServiceTest extends TestCase
         self::assertSame('Categoria de produtos eletrônicos', $result->getDescription());
     }
 
+    public function testGetFilteredCategoriesPaginatedReturnsArrayWithPaginationData(): void
+    {
+        $category1 = new Category();
+        $category1->setName('Eletrônicos');
+
+        $this->categoryRepository->expects(self::once())
+            ->method('findFilteredPaginated')
+            ->with('Eletrônicos', 1, 10)
+            ->willReturn([
+                'items' => [$category1],
+                'total' => 1,
+                'page' => 1,
+                'perPage' => 10,
+                'totalPages' => 1,
+            ]);
+
+        $result = $this->service->getFilteredCategoriesPaginated('Eletrônicos', 1, 10);
+
+        self::assertIsArray($result);
+        self::assertArrayHasKey('items', $result);
+        self::assertSame([$category1], $result['items']);
+        self::assertSame(1, $result['total']);
+    }
+
     public function testCreatePersistsCategoryAndFlushes(): void
     {
         $this->entityManager->expects(self::once())
@@ -60,7 +84,7 @@ class CategoryServiceTest extends TestCase
         $category = new Category();
 
         $this->categoryRepository->expects(self::once())
-            ->method('find')
+            ->method('findActiveById')
             ->with(5)
             ->willReturn($category);
 
@@ -69,11 +93,14 @@ class CategoryServiceTest extends TestCase
 
     public function testDeleteRemovesCategoryAndFlushes(): void
     {
-        $category = new Category();
+        $category = $this->createMock(Category::class);
+        $category->expects(self::once())
+            ->method('isDeleted')
+            ->willReturn(false);
 
-        $this->entityManager->expects(self::once())
-            ->method('remove')
-            ->with($category);
+        $category->expects(self::once())
+            ->method('softDelete')
+            ->willReturn($category);
 
         $this->entityManager->expects(self::once())
             ->method('flush');

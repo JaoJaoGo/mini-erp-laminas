@@ -59,7 +59,9 @@ class AuthService
 
     public function logout(): void
     {
-        $this->session->getManager()->getStorage()->clear('auth');
+        $this->session->offsetUnset('userId');
+        $this->session->offsetUnset('userName');
+        $this->session->offsetUnset('userEmail');
     }
 
     public function isAuthenticated(): bool

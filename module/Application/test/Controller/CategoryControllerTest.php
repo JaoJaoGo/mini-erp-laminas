@@ -53,9 +53,15 @@ class CategoryControllerTest extends TestCase
         $category->setName('Teste');
 
         $this->categoryService->expects(self::once())
-            ->method('getFilteredCategories')
-            ->with('Teste')
-            ->willReturn([$category]);
+            ->method('getFilteredCategoriesPaginated')
+            ->with('Teste', 1, 10)
+            ->willReturn([
+                'items' => [$category],
+                'total' => 1,
+                'page' => 1,
+                'perPage' => 10,
+                'totalPages' => 1,
+            ]);
 
         $request = new Request();
         $request->setQuery(new Parameters(['name' => 'Teste']));

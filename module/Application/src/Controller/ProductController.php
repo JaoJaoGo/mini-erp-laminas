@@ -24,19 +24,34 @@ class ProductController extends AbstractActionController
         private readonly ProductForm $productForm,
     ) { }
 
-    public function indexAction(): viewModel
+    public function indexAction(): ViewModel
     {
         $name = trim((string) $this->params()->fromQuery('name', ''));
         $categoryFilter = trim((string) $this->params()->fromQuery('category', ''));
+        $page = max(1, (int) $this->params()->fromQuery('page', ''));
+        $perPage = 10;
+
+        $result = $this->productService->getFilteredProductsPaginated(
+            $name,
+            $categoryFilter,
+            $page,
+            $perPage
+        );
 
         return $this->productResponse->index(
             user: $this->authService->getAuthenticatedUser(),
-            products: $this->productService->getFilteredProducts($name, $categoryFilter),
+            products: $result['items'],
             filters: $this->productResponse->createFilters($name, $categoryFilter),
+            pagination: $this->productResponse->createPagination(
+                total: $result['total'],
+                page: $result['page'],
+                perPage: $result['perPage'],
+                totalPages: $result['totalPages'],
+            ),
         );
     }
 
-    public function createAction(): viewModel|Response
+    public function createAction(): ViewModel|Response
     {
         $request = $this->getRequest();
         $form = clone $this->productForm;

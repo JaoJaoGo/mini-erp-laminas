@@ -26,11 +26,25 @@ class CategoryController extends AbstractActionController
     public function indexAction(): ViewModel
     {
         $name = trim((string) $this->params()->fromQuery('name', ''));
+        $page = max(1, (int) $this->params()->fromQuery('page', ''));
+        $perPage = 10;
+
+        $result = $this->categoryService->getFilteredCategoriesPaginated(
+            $name,
+            $page,
+            $perPage
+        );
 
         return $this->categoryResponse->index(
             user: $this->authService->getAuthenticatedUser(),
-            categories: $this->categoryService->getFilteredCategories($name),
+            categories: $result['items'],
             filters: $this->categoryResponse->createFilters($name),
+            pagination: $this->categoryResponse->createPagination(
+                total: $result['total'],
+                page: $result['page'],
+                perPage: $result['perPage'],
+                totalPages: $result['totalPages'],
+            ),
         );
     }
 

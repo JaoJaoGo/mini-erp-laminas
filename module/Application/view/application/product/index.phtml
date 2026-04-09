@@ -11,6 +11,14 @@ $products = $this->products ?? [];
 /** @var array $filters */
 $filters = $this->filters ?? [];
 
+/** @var array $pagination */
+$pagination = $this->pagination ?? [
+    'total' => 0,
+    'page' => 1,
+    'perPage' => 10,
+    'totalPages' => 1,
+];
+
 echo $this->partial('layout/header', [
     'user' => $user,
 ]);
@@ -91,6 +99,17 @@ echo $this->partial('layout/listing-table', [
     ],
     'rows' => $rows,
     'emptyMessage' => 'Nenhum produto cadastrado.',
+]);
+
+echo $this->partial('layout/pagination', [
+    'route' => 'product',
+    'page' => $pagination['page'],
+    'totalPages' => $pagination['totalPages'],
+    'total' => $pagination['total'],
+    'queryParams' => [
+        'name' => $filters['name'] ?? '',
+        'category' => $filters['category'] ?? '',
+    ],
 ]);
 
 echo $this->partial('layout/footer');

@@ -104,9 +104,12 @@ Você quer ver algo parecido com:
 
 ## Usuário inicial
 
-A aplicação não fornece cadastro de usuários pela interface. É necessário criar o primeiro usuário diretamente no banco de dados ou por um script PHP.
+A aplicação agora fornece cadastro de usuários pela interface web. Você pode acessar a página de registro em `/auth/register` ou através do link "Registrar" na página de login.
 
-Um exemplo de inserção usando SQL:
+Para criar o primeiro usuário administrador, você pode:
+
+1. **Via interface web**: Acesse `http://localhost:8080/auth/register` e preencha o formulário
+2. **Via SQL** (método alternativo):
 
 ```sql
 INSERT INTO users (name, email, password, isActive, createdAt, updatedAt)
@@ -141,12 +144,13 @@ vendor/bin/phpunit module/Application/test/Controller/ProductControllerTest.php
 vendor/bin/phpunit --coverage-html coverage/
 ```
 
-A aplicação inclui **85 testes** que cobrem:
+A aplicação inclui **106 testes** que cobrem:
 
 - Autenticação e controle de acesso
-- CRUD de categorias e produtos
+- Cadastro de usuários
+- CRUD de categorias e produtos com soft delete
 - Validações de formulário
-- Filtros e buscas
+- Filtros, buscas e paginação
 - Sincronização de relacionamentos
 - Queries customizadas do Doctrine
 - **Upload de imagens** (validação, substituição, deleção)
