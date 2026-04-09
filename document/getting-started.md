@@ -144,7 +144,7 @@ vendor/bin/phpunit module/Application/test/Controller/ProductControllerTest.php
 vendor/bin/phpunit --coverage-html coverage/
 ```
 
-A aplicação inclui **106 testes** que cobrem:
+A aplicação inclui **117 testes** que cobrem:
 
 - Autenticação e controle de acesso
 - Cadastro de usuários
@@ -152,6 +152,7 @@ A aplicação inclui **106 testes** que cobrem:
 - Validações de formulário
 - Filtros, buscas e paginação
 - Sincronização de relacionamentos
+- Testes funcionais de integração
 - Queries customizadas do Doctrine
 - **Upload de imagens** (validação, substituição, deleção)
 - Casos de erro e edge cases

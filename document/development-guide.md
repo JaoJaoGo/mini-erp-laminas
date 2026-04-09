@@ -104,6 +104,9 @@ Os testes cobrem todas as camadas da aplicação:
 - **Module** — Testes de configuração e bootstrap
   - `ModuleTest` — Verificação de autenticação, configuração
 
+- **Functional** — Testes funcionais de integração e lógica de negócio
+  - `FunctionalTest` — Soft delete, paginação, relacionamentos, validações de dados
+
 ### Executando testes
 
 ```bash
@@ -124,7 +127,7 @@ vendor/bin/phpunit --coverage-html coverage/
 
 ### Cobertura de testes
 
-A aplicação possui **106 testes** com **291 assertions** cobrindo:
+A aplicação possui **117 testes** com **351 assertions** cobrindo:
 
 - ✅ Fluxos de autenticação (login, logout, redirecionamento)
 - ✅ **Cadastro de usuários** (registro, validação de email único)
@@ -140,6 +143,7 @@ A aplicação possui **106 testes** com **291 assertions** cobrindo:
 - ✅ **Upload de imagens** — Formatos válidos, tamanho máximo, tratamento de erros
 - ✅ **Substituição de imagens** — Delete de arquivo antigo, conservação de imagem atual
 - ✅ **Validação de arquivo** — MIME type, extensão, tamanho
+- ✅ **Testes funcionais** — Lógica de paginação, soft delete, relacionamentos, validações de dados
 
 ## Análise estática
 
@@ -233,9 +237,6 @@ Para desenvolvimento em VS Code:
 
 ## Próximas melhorias
 
-- Implementar cadastro de usuários.
-- Adicionar paginação nas listagens.
-- Implementar soft delete.
 - Adicionar logs de auditoria.
 - Melhorar validações e tratamento de erros.
-- Adicionar testes funcionais e de integração.
+- Implementar cache para melhorar performance.
