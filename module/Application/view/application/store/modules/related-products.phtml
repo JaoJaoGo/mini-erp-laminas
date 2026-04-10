@@ -1,0 +1,27 @@
+<?php
+
+declare(strict_types=1);
+
+/** @var list<\Application\Entity\Product> $relatedProducts */
+$relatedProducts = $this->relatedProducts ?? [];
+?>
+
+<section style="background: #fff; border: 1px solid #e5e7eb; border-radius: 18px; padding: 28px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);">
+    <div style="margin-bottom: 20px;">
+        <h2 style="margin: 0 0 8px; font-size: 24px; color: #111827;">
+            Produtos relacionados
+        </h2>
+
+        <p style="margin: 0; color: #6b7280; font-size: 14px;">
+            Outros itens que combinam com esta navegação.
+        </p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px;">
+        <?php foreach ($relatedProducts as $product): ?>
+            <?= $this->partial('application/store/modules/product-card', [
+                'product' => $product,
+            ]) ?>
+        <?php endforeach; ?>
+    </div>
+</section>

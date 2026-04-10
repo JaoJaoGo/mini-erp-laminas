@@ -15,6 +15,8 @@ $categories = $this->categories ?? [];
 $filters = $this->filters ?? [
     'name' => '',
     'categoryId' => null,
+    'sort' => 'latest',
+    'inStock' => false,
 ];
 
 /** @var array{total:int,page:int,perPage:int,totalPages:int} $pagination */
@@ -24,9 +26,10 @@ $pagination = $this->pagination ?? [
     'perPage' => 12,
     'totalPages' => 1,
 ];
+?>
 
-echo $this->partial('layout/header', [
-    'user' => $user,
+<?= $this->partial('layout/store-header', [
+    'filters' => $filters,
 ]);
 ?>
 

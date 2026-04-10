@@ -45,20 +45,27 @@ class StoreResponseTest extends TestCase
     {
         $user = new User();
         $product = new Product();
+        $relatedProducts = [];
 
-        $viewModel = $this->response->view($user, $product);
+        $viewModel = $this->response->view($user, $product, $relatedProducts);
 
         self::assertInstanceOf(ViewModel::class, $viewModel);
         self::assertSame('application/store/view', $viewModel->getTemplate());
         self::assertSame($user, $viewModel->getVariable('user'));
         self::assertSame($product, $viewModel->getVariable('product'));
+        self::assertSame($relatedProducts, $viewModel->getVariable('relatedProducts'));
     }
 
     public function testCreateFiltersReturnsExpectedArray(): void
     {
         $filters = $this->response->createFilters('Notebook', 5);
 
-        self::assertSame(['name' => 'Notebook', 'categoryId' => 5], $filters);
+        self::assertSame([
+            'name' => 'Notebook',
+            'categoryId' => 5,
+            'sort' => 'latest',
+            'inStock' => false,
+        ], $filters);
     }
 
     public function testCreatePaginationReturnsExpectedArray(): void

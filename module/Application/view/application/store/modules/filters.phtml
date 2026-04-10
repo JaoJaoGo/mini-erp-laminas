@@ -2,41 +2,26 @@
 
 declare(strict_types=1);
 
-/** @var array{name:string, categoryId:?int} $filters */
+/** @var array{name:string, categoryId:?int, sort:string, inStock:bool} $filters */
 $filters = $this->filters ?? [
     'name' => '',
     'categoryId' => null,
+    'sort' => 'latest',
+    'inStock' => false,
 ];
 
 /** @var list<array{id:int,name:string,total:int}> $categories */
 $categories = $this->categories ?? [];
 ?>
 
-<div 
-    style="background: #fff;
-        border: 1px solid #e5e7eb;
-        border-radius: 16px;
-        padding: 24px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
-        position: sticky;
-        top: 24px;
-    "
->
+<div style="background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 24px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06); position: sticky; top: 24px;">
     <h2 style="margin: 0 0 20px; font-size: 22px; color: #111827;">
         Filtros
     </h2>
 
-    <form method="get" action="/loja">
-        <div style="margin-bottom: 20px;">
-            <label for="name"
-                style="
-                    display: block;
-                    margin-bottom: 8px;
-                    font-size: 14px;
-                    font-weight: 600;
-                    color: #374151;
-                "
-            >
+    <form method="get" action="<?= $this->url('store') ?>">
+        <div style="margin-bottom: 18px;">
+            <label for="name" style="display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; color: #374151;">
                 Buscar produto
             </label>
 
@@ -46,15 +31,37 @@ $categories = $this->categories ?? [];
                 id="name"
                 value="<?= $this->escapeHtmlAttr($filters['name']) ?>"
                 placeholder="Ex: notebook, mouse..."
-                style="
-                    width: 100%;
-                    padding: 12px 14px;
-                    border: 1px solid #d1d5db;
-                    border-radius: 10px;
-                    font-size: 14px;
-                    box-sizing: border-box;
-                "
+                style="width: 100%; padding: 12px 14px; border: 1px solid #d1d5db; border-radius: 10px; font-size: 14px; box-sizing: border-box;"
             >
+        </div>
+
+        <div style="margin-bottom: 18px;">
+            <label for="sort" style="display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; color: #374151;">
+                Ordenar por
+            </label>
+
+            <select
+                name="sort"
+                id="sort"
+                style="width: 100%; padding: 12px 14px; border: 1px solid #d1d5db; border-radius: 10px; font-size: 14px; box-sizing: border-box;"
+            >
+                <option value="latest" <?= $filters['sort'] === 'latest' ? 'selected' : '' ?>>Mais recentes</option>
+                <option value="price_asc" <?= $filters['sort'] === 'price_asc' ? 'selected' : '' ?>>Menor preço</option>
+                <option value="price_desc" <?= $filters['sort'] === 'price_desc' ? 'selected' : '' ?>>Maior preço</option>
+                <option value="name_asc" <?= $filters['sort'] === 'name_asc' ? 'selected' : '' ?>>Nome A-Z</option>
+            </select>
+        </div>
+
+        <div style="margin-bottom: 22px;">
+            <label style="display: flex; align-items: center; gap: 10px; color: #111827; font-size: 14px; font-weight: 600;">
+                <input
+                    type="checkbox"
+                    name="inStock"
+                    value="1"
+                    <?= $filters['inStock'] ? 'checked' : '' ?>
+                >
+                <span>Apenas produtos em estoque</span>
+            </label>
         </div>
 
         <div style="margin-bottom: 24px;">
@@ -64,19 +71,17 @@ $categories = $this->categories ?? [];
 
             <div style="display: flex; flex-direction: column; gap: 10px; max-height: 320px; overflow-y: auto;">
                 <label style="display: flex; align-items: center; gap: 10px; color: #111827; font-size: 14px;">
-                    <input type="radio" name="category" value="<?= $filters['categoryId'] === null ? 'checked' : '' ?>">
+                    <input
+                        type="radio"
+                        name="category"
+                        value=""
+                        <?= $filters['categoryId'] === null ? 'checked' : '' ?>
+                    >
                     <span>Todas as categorias</span>
                 </label>
 
                 <?php foreach ($categories as $category): ?>
-                    <label style="
-                        display: flex;
-                        align-items: center;
-                        justify-content: space-between;
-                        gap: 10px;
-                        color: #111827;
-                        font-size: 14px;
-                    ">
+                    <label style="display: flex; align-items: center; justify-content: space-between; gap: 10px; color: #111827; font-size: 14px;">
                         <span style="display: flex; align-items: center; gap: 10px;">
                             <input
                                 type="radio"
@@ -104,7 +109,7 @@ $categories = $this->categories ?? [];
             </button>
 
             <a
-                href="/loja"
+                href="<?= $this->url('store') ?>"
                 style="padding: 12px; border-radius: 10px; background: #f3f4f6; color: #111827; font-weight: 600; text-align: center; text-decoration: none; box-sizing: border-box;"
             >
                 Limpar

@@ -87,6 +87,8 @@ class ProductRepository extends EntityRepository
     public function findStorePaginated(
         string $name = '',
         ?int $categoryId = null,
+        string $sort = 'latest',
+        bool $inStock = false,
         int $page = 1,
         int $perPage = 12
     ): array {
@@ -98,7 +100,6 @@ class ProductRepository extends EntityRepository
             ->addSelect('c')
             ->andWhere('p.deletedAt IS NULL')
             ->andWhere('p.isActive = true')
-            ->orderBy('p.id', 'DESC')
             ->distinct();
         
         if ($name !== '') {
@@ -107,6 +108,33 @@ class ProductRepository extends EntityRepository
 
         if ($categoryId !== null) {
             $qb->andWhere('c.id = :categoryId')->setParameter('categoryId', $categoryId);
+        }
+
+        if ($inStock) {
+            $qb->andWhere('p.stock > 0');
+        }
+
+        switch($sort) {
+            case 'price_asc':
+                $qb->orderBy('p.price', 'ASC');
+                break;
+
+            case 'price_desc':
+                $qb->orderBy('p.price', 'DESC');
+                break;
+
+            case 'name_asc':
+                $qb->orderBy('p.name', 'ASC');
+                break;
+            
+            case 'name_desc':
+                $qb->orderBy('p.name', 'DESC');
+                break;
+
+            case 'latest':
+            default:
+                $qb->orderBy('p.id', 'DESC');
+                break;
         }
 
         $qb->setFirstResult(($page - 1) * $perPage)->setMaxResults($perPage);
@@ -160,6 +188,38 @@ class ProductRepository extends EntityRepository
             ->getOneOrNullResult();
 
         return $product instanceof Product ? $product : null;
+    }
+
+    /**
+     * @param list<int> $categoryIds
+     * @return list<Product>
+     */
+    public function findRelatedStoreProducts(
+        int $productId,
+        array $categoryIds,
+        int $limit = 4
+    ): array {
+        if ($categoryIds === []) {
+            return [];
+        }
+
+        $qb = $this->createQueryBuilder('p')
+            ->leftJoin('p.categories', 'c')
+            ->addSelect('c')
+            ->andWhere('p.deletedAt IS NULL')
+            ->andWhere('p.isActive = true')
+            ->andWhere('p.id != :productId')
+            ->andWhere('c.id IN (:categoryIds)')
+            ->setParameter('productId', $productId)
+            ->setParameter('categoryIds', $categoryIds)
+            ->orderBy('p.id', 'DESC')
+            ->setMaxResults(max(1, $limit))
+            ->distinct();
+
+        /** @var list<Product> $items */
+        $items = $qb->getQuery()->getResult();
+
+        return $items;
     }
 
     /**

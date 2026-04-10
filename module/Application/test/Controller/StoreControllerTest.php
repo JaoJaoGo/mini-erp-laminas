@@ -56,11 +56,13 @@ class StoreControllerTest extends TestCase
         $filters = [
             'name' => 'Teste',
             'categoryId' => null,
+            'sort' => 'latest',
+            'inStock' => false,
         ];
 
         $this->productService->expects(self::once())
             ->method('getStoreProductsPaginated')
-            ->with('Teste', null, 1, 12)
+            ->with('Teste', null, 'latest', false, 1, 12)
             ->willReturn([
                 'items' => $products,
                 'total' => 1,
@@ -79,7 +81,7 @@ class StoreControllerTest extends TestCase
 
         $this->storeResponse->expects(self::once())
             ->method('createFilters')
-            ->with('Teste', null)
+            ->with('Teste', null, 'latest', false)
             ->willReturn($filters);
 
         $this->storeResponse->expects(self::once())
@@ -127,7 +129,7 @@ class StoreControllerTest extends TestCase
 
         $this->storeResponse->expects(self::once())
             ->method('view')
-            ->with(null, $product)
+            ->with(null, $product, [])
             ->willReturn(new \Laminas\View\Model\ViewModel());
 
         $this->controller->setEvent($this->createRouteEvent(['id' => 42]));

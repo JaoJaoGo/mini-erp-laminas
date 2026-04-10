@@ -336,6 +336,7 @@ return [
             'error/404' => __DIR__ . '/../view/error/404.phtml',
             'error/index' => __DIR__ . '/../view/error/index.phtml',
             'layout/header' => __DIR__ . '/../view/layout/header.phtml',
+            'layout/store-header' => __DIR__ . '/../view/layout/store-header.phtml',
             'layout/footer' => __DIR__ . '/../view/layout/footer.phtml',
             'layout/listing-table' => __DIR__ . '/../view/layout/listing-table.phtml',
             'layout/listing-toolbar' => __DIR__ . '/../view/layout/listing-toolbar.phtml',

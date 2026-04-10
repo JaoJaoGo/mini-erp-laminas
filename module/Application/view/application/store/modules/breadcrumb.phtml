@@ -1,0 +1,24 @@
+<?php
+
+declare(strict_types=1);
+
+/** @var \Application\Entity\Product $product */
+$product = $this->product;
+
+$categories = $product->getCategories()->toArray();
+$primaryCategory = $categories[0] ?? null;
+?>
+
+<nav style="margin-bottom: 18px; color: #6b7280; font-size: 14px;">
+    <a href="<?= $this->url('store') ?>" style="color: #2563eb; text-decoration: none;">Loja</a>
+
+    <?php if ($primaryCategory !== null): ?>
+        <span> / </span>
+        <span><?= $this->escapeHtml($primaryCategory->getName()) ?></span>
+    <?php endif; ?>
+
+    <span> / </span>
+    <span style="color: #111827; font-weight: 600;">
+        <?= $this->escapeHtml($product->getName()) ?>
+    </span>
+</nav>

@@ -36,12 +36,20 @@ class StoreController extends AbstractActionController
         $categoryId = $this->normalizeCategoryId(
             $this->params()->fromQuery('category', '')
         );
+        $sort = $this->normalizeSort(
+            $this->params()->fromQuery('sort', 'latest')
+        );
+        $inStock = $this->normalizeBoolean(
+            $this->params()->fromQuery('inStock', '')
+        );
         $page = max(1, (int) $this->params()->fromQuery('page', 1));
         $perPage = 12;
 
         $result = $this->productService->getStoreProductsPaginated(
             $name,
             $categoryId,
+            $sort,
+            $inStock,
             $page,
             $perPage
         );
@@ -52,7 +60,7 @@ class StoreController extends AbstractActionController
             user: $this->authService->getAuthenticatedUser(),
             products: $result['items'],
             categories: $categories,
-            filters: $this->storeResponse->createFilters($name, $categoryId),
+            filters: $this->storeResponse->createFilters($name, $categoryId, $sort, $inStock),
             pagination: $this->storeResponse->createPagination(
                 total: $result['total'],
                 page: $result['page'],
@@ -71,9 +79,12 @@ class StoreController extends AbstractActionController
             return $this->notFoundAction();
         }
 
+        $relatedProducts = $this->productService->getRelatedStoreProducts($product, 4);
+
         return $this->storeResponse->view(
             user: $this->authService->getAuthenticatedUser(),
             product: $product,
+            relatedProducts: $relatedProducts,
         );
     }
 
@@ -88,5 +99,27 @@ class StoreController extends AbstractActionController
         $categoryId = (int) $value;
 
         return $categoryId > 0 ? $categoryId : null;
+    }
+
+    private function normalizeSort(mixed $value): string
+    {
+        $value = trim((string) $value);
+
+        $allowed = [
+            'latest',
+            'price_asc',
+            'price_desc',
+            'name_asc',
+            'name_desc',
+        ];
+
+        return in_array($value, $allowed, true) ? $value : 'latest';
+    }
+
+    private function normalizeBoolean(mixed $value): bool
+    {
+        $value = strtolower(trim((string) $value));
+
+        return in_array($value, ['1', 'true', 'on', 'yes'], true);
     }
 }

@@ -6,15 +6,14 @@ declare(strict_types=1);
 $product = $this->product;
 
 $imagePath = $product->getImagePath();
-$imageUrl = $imagePath ? '/' . ltrim($imagePath, '/') : 'https://via.placeholder.com/640x480?text=Produto';
+$imageUrl = $imagePath ? '/' . ltrim($imagePath, '/') : '/img/product-placeholder.png';
 
 $categories = $product->getCategories()->toArray();
-$primaryCategory = $categories[0] ?? null;
 ?>
 
 <div style="background: #fff; border: 1px solid #e5e7eb; border-radius: 18px; padding: 32px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);">
     <div style="display: grid; grid-template-columns: minmax(320px, 520px) minmax(0, 1fr); gap: 32px; align-items: start;">
-        <div style="background: #f9fafb; border-radius: 16px; min-height: 420px; display: flex; align-items: center; justify-content: center; padding: 24px;">
+        <div style="background: #f9fafb; border-radius: 16px; min-height: 460px; display: flex; align-items: center; justify-content: center; padding: 24px;">
             <img
                 src="<?= $this->escapeHtmlAttr($imageUrl) ?>"
                 alt="<?= $this->escapeHtmlAttr($product->getName()) ?>"
@@ -23,11 +22,13 @@ $primaryCategory = $categories[0] ?? null;
         </div>
 
         <div>
-            <?php if ($primaryCategory !== null): ?>
-                <div style="margin-bottom: 14px;">
-                    <span style="display: inline-block; padding: 6px 12px; border-radius: 999px; background: #eff6ff; color: #1d4ed8; font-size: 13px; font-weight: 700;">
-                        <?= $this->escapeHtml($primaryCategory->getName()) ?>
-                    </span>
+            <?php if ($categories !== []): ?>
+                <div style="margin-bottom: 14px; display: flex; flex-wrap: wrap; gap: 8px;">
+                    <?php foreach ($categories as $category): ?>
+                        <span style="display: inline-block; padding: 6px 12px; border-radius: 999px; background: #eff6ff; color: #1d4ed8; font-size: 13px; font-weight: 700;">
+                            <?= $this->escapeHtml($category->getName()) ?>
+                        </span>
+                    <?php endforeach; ?>
                 </div>
             <?php endif; ?>
 
@@ -35,11 +36,17 @@ $primaryCategory = $categories[0] ?? null;
                 <?= $this->escapeHtml($product->getName()) ?>
             </h1>
 
-            <div style="margin-bottom: 20px;">
+            <div style="margin-bottom: 12px;">
                 <p style="margin: 0; font-size: 36px; font-weight: 700; color: #111827;">
                     R$ <?= number_format((float) $product->getPrice(), 2, ',', '.') ?>
                 </p>
             </div>
+
+            <p style="margin: 0 0 22px; color: #6b7280; font-size: 14px;">
+                <?= $product->getStock() > 0
+                    ? 'Disponível para compra imediata'
+                    : 'Sem estoque no momento' ?>
+            </p>
 
             <div style="margin-bottom: 24px; padding: 18px; border: 1px solid #e5e7eb; border-radius: 14px; background: #fafafa;">
                 <p style="margin: 0 0 8px; color: #111827; font-weight: 700;">
@@ -53,12 +60,23 @@ $primaryCategory = $categories[0] ?? null;
                 </p>
             </div>
 
-            <button
-                type="button"
-                style="width: 100%; max-width: 320px; padding: 14px 18px; border: 0; border-radius: 999px; background: #ffd814; color: #111827; font-weight: 700; cursor: pointer;"
-            >
-                Comprar agora
-            </button>
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                <button
+                    type="button"
+                    style="padding: 14px 22px; border: 0; border-radius: 999px; background: #ffd814; color: #111827; font-weight: 700; cursor: pointer;"
+                    onclick="alert('Carrinho ainda será implementado 😎');"
+                >
+                    Adicionar ao carrinho
+                </button>
+
+                <button
+                    type="button"
+                    style="padding: 14px 22px; border: 1px solid #d1d5db; border-radius: 999px; background: #fff; color: #111827; font-weight: 700; cursor: pointer;"
+                    onclick="alert('Fluxo de compra ainda será implementado 😎');"
+                >
+                    Comprar agora
+                </button>
+            </div>
         </div>
     </div>
 </div>

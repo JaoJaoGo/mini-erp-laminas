@@ -8,20 +8,23 @@ $user = $this->user ?? null;
 /** @var \Application\Entity\Product $product */
 $product = $this->product;
 
-echo $this->partial('layout/header', [
-    'user' => $user,
-]);
+/** @var list<\Application\Entity\Product> $relatedProducts */
+$relatedProducts = $this->relatedProducts ?? [];
 ?>
 
+<?= $this->partial('layout/store-header', [
+    'filters' => [
+        'name' => '',
+        'categoryId' => null,
+        'sort' => 'latest',
+        'inStock' => false,
+    ],
+]) ?>
+
 <section style="max-width: 1440px; margin: 32px auto; padding: 0 24px;">
-    <div style="margin-bottom: 20px;">
-        <a
-            href="<?= $this->url('store') ?>"
-            style="display: inline-flex; align-items: center; gap: 8px; color: #2563eb; text-decoration: none; font-weight: 600;"
-        >
-            ← Voltar para a loja
-        </a>
-    </div>
+    <?= $this->partial('application/store/modules/breadcrumb', [
+        'product' => $product,
+    ]) ?>
 
     <?= $this->partial('application/store/modules/product-hero', [
         'product' => $product,
@@ -32,6 +35,14 @@ echo $this->partial('layout/header', [
             'product' => $product,
         ]) ?>
     </div>
+
+    <?php if ($relatedProducts !== []): ?>
+        <div style="margin-top: 32px;">
+            <?= $this->partial('application/store/modules/related-products', [
+                'relatedProducts' => $relatedProducts,
+            ]) ?>
+        </div>
+    <?php endif; ?>
 </section>
 
-<?php echo $this->partial('layout/footer'); ?>
+<?= $this->partial('layout/footer') ?>

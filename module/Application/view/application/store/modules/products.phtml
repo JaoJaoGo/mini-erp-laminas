@@ -13,10 +13,12 @@ $pagination = $this->pagination ?? [
     'totalPages' => 1,
 ];
 
-/** @var array{name:string, categoryId:?int} $filters */
+/** @var array{name:string, categoryId:?int, sort:string, inStock:bool} $filters */
 $filters = $this->filters ?? [
     'name' => '',
     'categoryId' => null,
+    'sort' => 'latest',
+    'inStock' => false,
 ];
 ?>
 
@@ -31,6 +33,20 @@ $filters = $this->filters ?? [
                 <?= (int) $pagination['total'] ?> produto(s) encontrado(s)
             </p>
         </div>
+
+        <div style="display: inline-flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 999px; background: #f9fafb; border: 1px solid #e5e7eb; color: #374151; font-size: 13px;">
+            <span>Ordenação:</span>
+            <strong>
+                <?php
+                echo match ($filters['sort']) {
+                    'price_asc' => 'Menor preço',
+                    'price_desc' => 'Maior preço',
+                    'name_asc' => 'Nome A-Z',
+                    default => 'Mais recentes',
+                };
+                ?>
+            </strong>
+        </div>
     </div>
 
     <?php if ($products === []): ?>
@@ -44,7 +60,7 @@ $filters = $this->filters ?? [
             </p>
         </div>
     <?php else: ?>
-        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px;">
             <?php foreach ($products as $product): ?>
                 <?= $this->partial('application/store/modules/product-card', [
                     'product' => $product,
@@ -59,12 +75,14 @@ $filters = $this->filters ?? [
                     $query = http_build_query([
                         'name' => $filters['name'],
                         'category' => $filters['categoryId'],
+                        'sort' => $filters['sort'],
+                        'inStock' => $filters['inStock'] ? '1' : null,
                         'page' => $page,
                     ]);
                     ?>
 
                     <a
-                        href="/loja?<?= $this->escapeHtmlAttr($query) ?>"
+                        href="<?= $this->url('store') . '?' . $this->escapeHtmlAttr($query) ?>"
                         style="
                             min-width: 42px;
                             padding: 10px 14px;

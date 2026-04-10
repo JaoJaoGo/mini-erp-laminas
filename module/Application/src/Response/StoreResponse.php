@@ -19,7 +19,7 @@ class StoreResponse
     /**
      * @param list<Product> $products
      * @param list<array{id:int,name:string,total:int}> $categories
-     * @param array{name:string, categoryId:?int} $filters
+     * @param array{name:string, categoryId:?int, sort:string, inStock: bool} $filters
      * @param array{
      *      total: int,
      *      page: int,
@@ -43,22 +43,29 @@ class StoreResponse
         ]))->setTemplate('application/store/index');
     }
 
-    public function view(?User $user, Product $product): ViewModel
+    public function view(?User $user, Product $product, array $relatedProducts): ViewModel
     {
         return (new ViewModel([
             'user' => $user,
             'product' => $product,
+            'relatedProducts' => $relatedProducts,
         ]))->setTemplate('application/store/view');
     }
 
     /**
-     * @return array{name:string, categoryId:?int}
+     * @return array{name:string, categoryId:?int, sort: string, inStock: bool}
      */
-    public function createFilters(string $name = '', ?int $categoryId = null): array
-    {
+    public function createFilters(
+        string $name = '',
+        ?int $categoryId = null,
+        string $sort = 'latest',
+        bool $inStock = false
+        ): array {
         return [
             'name' => $name,
             'categoryId' => $categoryId,
+            'sort' => $sort,
+            'inStock' => $inStock,
         ];
     }
 

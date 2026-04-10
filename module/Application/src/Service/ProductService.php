@@ -76,12 +76,16 @@ class ProductService
     public function getStoreProductsPaginated(
         string $name = '',
         ?int $categoryId = null,
+        string $sort = 'latest',
+        bool $inStock = false,
         int $page = 1,
         int $perPage = 12
     ): array {
         return $this->productRepository->findStorePaginated(
             $name,
             $categoryId,
+            $sort,
+            $inStock,
             $page,
             $perPage
         );
@@ -95,6 +99,23 @@ class ProductService
     public function findStoreById(int $id): ?Product
     {
         return $this->productRepository->findStoreActiveById($id);
+    }
+
+    /**
+     * @return list<Product>
+     */
+    public function getRelatedStoreProducts(Product $product, int $limit = 4): array
+    {
+        $categoryIds = array_map(
+            static fn (Category $category): int => (int) $category->getId(),
+            $product->getCategories()->toArray()
+        );
+
+        return $this->productRepository->findRelatedStoreProducts(
+            (int) $product->getId(),
+            $categoryIds,
+            $limit
+        );
     }
 
     public function createEmpty(): Product

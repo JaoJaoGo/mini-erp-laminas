@@ -48,6 +48,11 @@ $categories = $product->getCategories()->toArray();
                     <strong>Estoque:</strong>
                     <?= (int) $product->getStock() ?>
                 </div>
+
+                <div>
+                    <strong>Preço:</strong>
+                    R$ <?= number_format((float) $product->getPrice(), 2, ',', '.') ?>
+                </div>
             </div>
         </div>
 
