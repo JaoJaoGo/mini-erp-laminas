@@ -7,6 +7,16 @@ namespace Application\Service;
 use Application\Entity\User;
 use Doctrine\ORM\EntityManager;
 
+/**
+ * Serviço responsável por gerenciar usuários no sistema.
+ *
+ * O UserService fornece operações de verificação de existência de e-mail e criação
+ * de usuários, utilizando o EntityManager para persistência.
+ *
+ * Métodos disponíveis:
+ * - emailExists(string $email): bool
+ * - create(string $name, string $email, string $password): User
+ */
 class UserService
 {
     public function __construct(

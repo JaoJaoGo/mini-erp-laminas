@@ -8,6 +8,22 @@ use Application\Entity\Category;
 use Application\Repository\CategoryRepository;
 use Doctrine\ORM\EntityManager;
 
+/**
+ * Serviço responsável pela lógica de negócio de categorias.
+ *
+ * O CategoryService orquestra operações de criação, atualização, exclusão lógica e paginação
+ * de categorias, utilizando o CategoryRepository e o EntityManager para persistência.
+ *
+ * Métodos disponíveis:
+ * - getFilteredCategoriesPaginated(string $name, int $page, int $perPage): array
+ * - getStoreCategoriesWithProductCount(): array
+ * - findById(int $id): ?Category
+ * - createEmpty(): Category
+ * - create(array $data): Category
+ * - update(Category $category, array $data): Category
+ * - delete(Category $category): void
+ * - fillEntity(Category $category, array $data): Category
+ */
 class CategoryService
 {
     public function __construct(

@@ -11,6 +11,16 @@ use Application\Service\ProductService;
 use Laminas\Mvc\Controller\AbstractActionController;
 use Laminas\View\Model\ViewModel;
 
+/**
+ * Controlador responsável pela loja pública.
+ *
+ * Fornece listagem pública de produtos, filtros por nome/categoria e visualização de produto,
+ * sem exigir autenticação.
+ *
+ * Ações disponíveis:
+ * - indexAction: retorna a listagem pública de produtos com filtros e paginação.
+ * - viewAction: exibe detalhes de um produto na loja pública.
+ */
 class StoreController extends AbstractActionController
 {
     public function __construct(

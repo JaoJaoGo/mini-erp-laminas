@@ -8,6 +8,12 @@ use Application\Entity\Product;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 
+/**
+ * Repositório para operações de leitura e consulta de produtos.
+ *
+ * Fornece métodos para paginação de produtos no painel administrativo e na loja pública,
+ * além de consultas para produtos ativos e contagem de status ativo/inativo.
+ */
 class ProductRepository extends EntityRepository
 {
     /**

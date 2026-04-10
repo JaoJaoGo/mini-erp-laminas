@@ -10,6 +10,12 @@ use Application\Entity\User;
 use Application\Form\ProductForm;
 use Laminas\View\Model\ViewModel;
 
+/**
+ * Classe responsável pela montagem das respostas para operações de produto.
+ *
+ * O ProductResponse cria ViewModels para listagem de produtos, formulários de criação/edição
+ * e valores padrão de formulário para produtos existentes ou novos.
+ */
 class ProductResponse
 {
     /**

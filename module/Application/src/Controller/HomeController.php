@@ -9,6 +9,15 @@ use Application\Service\MetricService;
 use Laminas\Mvc\Controller\AbstractActionController;
 use Laminas\View\Model\ViewModel;
 
+/**
+ * Controlador responsável pela exibição do dashboard da aplicação.
+ *
+ * Este controlador utiliza o MetricService para coletar dados estatísticos e o AuthService
+ * para recuperar o usuário atualmente autenticado.
+ *
+ * Ações disponíveis:
+ * - homeAction: exibe o painel inicial com totais e gráficos.
+ */
 class HomeController extends AbstractActionController
 {
     public function __construct(

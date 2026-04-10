@@ -10,6 +10,17 @@ use Application\Repository\CategoryRepository;
 use Application\Repository\ProductRepository;
 use Doctrine\ORM\EntityManager;
 
+/**
+ * Serviço responsável pela geração de métricas e dados para o dashboard.
+ *
+ * O MetricService consulta os repositórios de categoria e produto para construir
+ * totais gerais e séries de dados para gráficos de status e por categoria.
+ *
+ * Métodos disponíveis:
+ * - getDashboardData(): array
+ * - getProductsPerCategoryChart(): array
+ * - getProductsStatusChart(): array
+ */
 class MetricService
 {
     public function __construct(

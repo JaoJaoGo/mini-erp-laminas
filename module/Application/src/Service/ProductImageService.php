@@ -7,6 +7,16 @@ namespace Application\Service;
 use Laminas\Http\PhpEnvironment\Request;
 use RuntimeException;
 
+/**
+ * Serviço responsável pelo upload e exclusão de imagens de produto.
+ *
+ * O ProductImageService processa o envio de arquivos enviados via request, valida
+ * extensão, tipo MIME e tamanho, e remove imagens antigas do diretório público.
+ *
+ * Métodos disponíveis:
+ * - uploadFromRequest(Request $request, ?string $currentImagePath = null): ?string
+ * - delete(?string $imagePath): void
+ */
 class ProductImageService
 {
     public function __construct(

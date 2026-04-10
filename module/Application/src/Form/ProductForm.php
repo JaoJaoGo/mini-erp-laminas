@@ -18,6 +18,30 @@ use Laminas\Validator\Callback;
 use Laminas\Validator\NotEmpty;
 use Laminas\Validator\StringLength;
 
+/**
+ * Formulário de produtos utilizado para criação e edição de produtos.
+ *
+ * O ProductForm é usado pelo ProductController para validar dados de produto,
+ * incluindo nome, descrição, imagem, preço, estoque, status e categorias.
+ * Ele também configura envio multipart para upload de imagem.
+ *
+ * Campos do formulário:
+ * - name: Nome do produto, obrigatório.
+ * - description: Descrição do produto, opcional.
+ * - image: Arquivo de imagem opcional (*.jpg, *.jpeg, *.png, *.webp).
+ * - price: Preço do produto, obrigatório.
+ * - stock: Quantidade em estoque, obrigatória.
+ * - isActive: Status ativo/inativo.
+ * - categories: IDs de categorias relacionados ao produto.
+ * - csrf: Token CSRF para proteção contra falsificação.
+ *
+ * Validações:
+ * - name: obrigatório, trim, tamanho máximo de 150 caracteres.
+ * - image: valida extensão, mime type e tamanho máximo de 5MB.
+ * - price: obrigatório e deve ser um valor numérico válido.
+ * - stock: obrigatório e deve ser inteiro não negativo.
+ * - isActive: obrigatório.
+ */
 class ProductForm extends Form
 {
     public function __construct(string $name = 'product-form')

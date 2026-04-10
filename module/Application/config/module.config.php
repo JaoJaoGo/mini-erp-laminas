@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Configuração principal do módulo Application.
+ *
+ * Define rotas, controllers, serviço de injeção de dependências, opções de upload
+ * de produto e templates de view para a aplicação.
+ */
 declare(strict_types=1);
 
 namespace Application;
@@ -45,6 +51,12 @@ use Laminas\Router\Http\Segment;
 use Laminas\ServiceManager\Factory\InvokableFactory;
 
 return [
+    /**
+     * Configuração de rotas do módulo Application.
+     *
+     * Define rotas públicas e privadas, incluindo as rotas de autenticação,
+     * a loja pública, dashboard e os melhores recursos CRUD para categorias e produtos.
+     */
     'router' => [
         'routes' => [
             'login' => [
@@ -258,6 +270,12 @@ return [
         ],
     ],
 
+    /**
+     * Controllers e factories.
+     *
+     * Cada controller tem sua factory responsável por injetar dependências
+     * necessárias para a execução das ações da aplicação.
+     */
     'controllers' => [
         'factories' => [
             HomeController::class => HomeControllerFactory::class,
@@ -268,6 +286,12 @@ return [
         ],
     ],
 
+    /**
+     * Serviço de injeção de dependências.
+     *
+     * Registra factories para Services, Repositories, Responses e Forms,
+     * garantindo criação correta de instâncias com dependências necessárias.
+     */
     'service_manager' => [
         'factories' => [
             AuthService::class => AuthServiceFactory::class,
@@ -288,10 +312,20 @@ return [
         ],
     ],
 
+    /**
+     * Configurações específicas de upload de produto.
+     *
+     * Define o diretório público onde imagens de produto são gravadas.
+     */
     'product_upload' => [
         'public_directory' => dirname(__DIR__, 3) . '/public',
     ],
 
+    /**
+     * Configuração de visualização.
+     *
+     * Define templates, paths e opções de exibição para erros, layouts e páginas da aplicação.
+     */
     'view_manager' => [
         'display_not_found_reason' => true,
         'display_exceptions' => true,

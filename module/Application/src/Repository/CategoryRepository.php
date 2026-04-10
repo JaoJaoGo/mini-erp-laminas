@@ -9,6 +9,12 @@ use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\ORM\Query\Expr\Join;
 
+/**
+ * Repositório para operações de leitura e consulta de categorias.
+ *
+ * Fornece métodos para paginação de categorias, consulta de categorias ativas
+ * e contagem de produtos por categoria, aplicando filtros de exclusão lógica.
+ */
 class CategoryRepository extends EntityRepository
 {
     /**

@@ -16,6 +16,27 @@ use Laminas\Validator\Identical;
 use Laminas\Validator\NotEmpty;
 use Laminas\Validator\StringLength;
 
+/**
+ * Formulário de cadastro de usuário.
+ *
+ * O RegisterForm é utilizado pelo AuthController para validar os dados de registro
+ * de novos usuários. Ele inclui campos de nome, e-mail, senha, confirmação de senha
+ * e token CSRF.
+ *
+ * Campos do formulário:
+ * - name: Nome do usuário, obrigatório.
+ * - email: E-mail do usuário, obrigatório e em formato válido.
+ * - password: Senha do usuário, obrigatória.
+ * - password_confirmation: Confirmação da senha, obrigatória e deve ser igual à senha.
+ * - csrf: Token CSRF para proteção contra falsificação.
+ * - submit: Botão de envio do formulário.
+ *
+ * Validações:
+ * - name: obrigatório, trim, mínimo de 3 e máximo de 120 caracteres.
+ * - email: obrigatório, trim, lowercase e formato de e-mail válido.
+ * - password: obrigatório, mínimo de 6 caracteres.
+ * - password_confirmation: obrigatório e idêntico ao campo password.
+ */
 class RegisterForm extends Form
 {
     public function __construct(string $name = 'register-form')

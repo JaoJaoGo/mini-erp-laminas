@@ -13,6 +13,30 @@ use Doctrine\ORM\EntityManager;
 use Laminas\Http\PhpEnvironment\Request;
 use Application\Service\ProductImageService;
 
+/**
+ * Serviço responsável pela lógica de negócio de produtos.
+ *
+ * O ProductService gerencia a listagem, busca, criação, atualização e exclusão lógica
+ * de produtos, incluindo sincronização de categorias, validação de valores e manipulação
+ * de imagens por meio do ProductImageService.
+ *
+ * Métodos disponíveis:
+ * - getFilteredProductsPaginated(string $name, string $category, int $page, int $perPage): array
+ * - getStoreProductsPaginated(string $name, ?int $categoryId, int $page, int $perPage): array
+ * - findById(int $id): ?Product
+ * - findStoreById(int $id): ?Product
+ * - createEmpty(): Product
+ * - getCategoriesForForm(): array
+ * - normalizeCategoryIds(mixed $categoryIds): array
+ * - findCategoriesByIds(array $categoryIds): array
+ * - appendCategoryValidationError(ProductForm $form, array $categoryIds): void
+ * - normalizeMoneyValue(string $value): string
+ * - fillEntity(Product $product, array $data): Product
+ * - syncCategories(Product $product, array $categoryIds): void
+ * - create(array $data, array $categoryIds, Request $request): Product
+ * - update(Product $product, array $data, array $categoryIds, Request $request): Product
+ * - delete(Product $product): void
+ */
 class ProductService
 {
     public function __construct(

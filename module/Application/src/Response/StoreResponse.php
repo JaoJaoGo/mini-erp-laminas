@@ -8,6 +8,12 @@ use Application\Entity\Product;
 use Application\Entity\User;
 use Laminas\View\Model\ViewModel;
 
+/**
+ * Classe responsável pela montagem das respostas para as páginas da loja pública.
+ *
+ * O StoreResponse monta ViewModels para a página de listagem de produtos da loja,
+ * filtros e paginação, bem como para a visualização de detalhes de produto.
+ */
 class StoreResponse
 {
     /**

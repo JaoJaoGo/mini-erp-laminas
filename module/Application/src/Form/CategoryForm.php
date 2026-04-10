@@ -13,6 +13,21 @@ use Laminas\Validator\Callback;
 use Laminas\Validator\NotEmpty;
 use Laminas\Validator\StringLength;
 
+/**
+ * Formulário para criação e edição de categorias.
+ *
+ * O CategoryForm é utilizado pelo CategoryController para renderizar e validar
+ * os dados de categoria. Ele define campos para nome, descrição e token CSRF.
+ *
+ * Campos do formulário:
+ * - name: Campo obrigatório para o nome da categoria.
+ * - description: Campo opcional para descrição da categoria.
+ * - csrf: Campo de token CSRF para proteção contra ataques de falsificação de solicitação.
+ *
+ * Validações:
+ * - name: obrigatório, trim e tamanho máximo de 150 caracteres.
+ * - description: trim opcional.
+ */
 class CategoryForm extends Form
 {
     public function __construct(string $name = 'category-form')

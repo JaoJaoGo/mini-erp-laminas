@@ -15,6 +15,18 @@ use Laminas\Mvc\Controller\AbstractActionController;
 use Laminas\View\Model\ViewModel;
 use RuntimeException;
 
+/**
+ * Controlador responsável pelo CRUD de produtos.
+ *
+ * Usa ProductService para a lógica de produto, ProductResponse para renderização de respostas
+ * e AuthService para recuperação do usuário autenticado.
+ *
+ * Ações disponíveis:
+ * - indexAction: lista produtos filtrados e paginados.
+ * - createAction: exibe formulário de criação ou processa criação de produto.
+ * - editAction: exibe formulário de edição ou processa atualização de produto.
+ * - deleteAction: exclui produto existente.
+ */
 class ProductController extends AbstractActionController
 {
     public function __construct(

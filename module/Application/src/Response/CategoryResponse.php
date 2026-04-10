@@ -9,6 +9,12 @@ use Application\Entity\User;
 use Application\Form\CategoryForm;
 use Laminas\View\Model\ViewModel;
 
+/**
+ * Classe responsável pela montagem das respostas para operações de categoria.
+ *
+ * O CategoryResponse centraliza a criação de ViewModels para as páginas de listagem
+ * e formulário de categoria, além de fornecer dados padrão para formulários e filtros.
+ */
 class CategoryResponse
 {
     /**

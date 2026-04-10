@@ -14,6 +14,18 @@ use Laminas\Http\Response;
 use Laminas\Mvc\Controller\AbstractActionController;
 use Laminas\View\Model\ViewModel;
 
+/**
+ * Controlador responsável pelo CRUD de categorias.
+ *
+ * Usa CategoryService para operações de negócio, CategoryResponse para formatação de resposta
+ * e AuthService para obter o usuário autenticado.
+ *
+ * Ações disponíveis:
+ * - indexAction: lista categorias filtradas e paginadas.
+ * - createAction: exibe formulário de criação ou processa cadastro.
+ * - editAction: exibe formulário de edição ou processa atualização.
+ * - deleteAction: realiza exclusão lógica (soft delete) de categoria.
+ */
 class CategoryController extends AbstractActionController
 {
     public function __construct(
