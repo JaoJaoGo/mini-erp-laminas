@@ -32,6 +32,14 @@ class CategoryService
         return $this->categoryRepository->findFilteredPaginated($name, $page, $perPage);
     }
 
+    /**
+     * @return list<array{id:int,name:string,total:int}>
+     */
+    public function getStoreCategoriesWithProductCount(): array
+    {
+        return $this->categoryRepository->findStoreCategoriesWithProductCount();
+    }
+
     public function findById(int $id): ?Category
     {
         return $this->categoryRepository->findActiveById($id);

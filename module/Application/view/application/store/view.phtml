@@ -1,0 +1,37 @@
+<?php
+
+declare(strict_types=1);
+
+/** @var \Application\Entity\User|null $user */
+$user = $this->user ?? null;
+
+/** @var \Application\Entity\Product $product */
+$product = $this->product;
+
+echo $this->partial('layout/header', [
+    'user' => $user,
+]);
+?>
+
+<section style="max-width: 1440px; margin: 32px auto; padding: 0 24px;">
+    <div style="margin-bottom: 20px;">
+        <a
+            href="<?= $this->url('store') ?>"
+            style="display: inline-flex; align-items: center; gap: 8px; color: #2563eb; text-decoration: none; font-weight: 600;"
+        >
+            ← Voltar para a loja
+        </a>
+    </div>
+
+    <?= $this->partial('application/store/modules/product-hero', [
+        'product' => $product,
+    ]) ?>
+
+    <div style="margin-top: 24px;">
+        <?= $this->partial('application/store/modules/product-details', [
+            'product' => $product,
+        ]) ?>
+    </div>
+</section>
+
+<?php echo $this->partial('layout/footer'); ?>

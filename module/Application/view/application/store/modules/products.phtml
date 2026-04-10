@@ -1,0 +1,86 @@
+<?php
+
+declare(strict_types=1);
+
+/** @var list<\Application\Entity\Product> $products */
+$products = $this->products ?? [];
+
+/** @var array{total:int,page:int,perPage:int,totalPages:int} $pagination */
+$pagination = $this->pagination ?? [
+    'total' => 0,
+    'page' => 1,
+    'perPage' => 12,
+    'totalPages' => 1,
+];
+
+/** @var array{name:string, categoryId:?int} $filters */
+$filters = $this->filters ?? [
+    'name' => '',
+    'categoryId' => null,
+];
+?>
+
+<div style="background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 24px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);">
+    <div style="display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 24px; flex-wrap: wrap;">
+        <div>
+            <h2 style="margin: 0 0 6px; font-size: 24px; color: #111827;">
+                Produtos
+            </h2>
+
+            <p style="margin: 0; color: #6b7280; font-size: 14px;">
+                <?= (int) $pagination['total'] ?> produto(s) encontrado(s)
+            </p>
+        </div>
+    </div>
+
+    <?php if ($products === []): ?>
+        <div style="padding: 48px 24px; text-align: center; border: 1px dashed #d1d5db; border-radius: 16px; background: #f9fafb;">
+            <p style="margin: 0 0 8px; font-size: 18px; font-weight: 700; color: #111827;">
+                Nenhum produto encontrado
+            </p>
+
+            <p style="margin: 0; color: #6b7280;">
+                Tente ajustar os filtros para visualizar outros itens.
+            </p>
+        </div>
+    <?php else: ?>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px;">
+            <?php foreach ($products as $product): ?>
+                <?= $this->partial('application/store/modules/product-card', [
+                    'product' => $product,
+                ]) ?>
+            <?php endforeach; ?>
+        </div>
+
+        <?php if ((int) $pagination['totalPages'] > 1): ?>
+            <div style="display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-top: 32px;">
+                <?php for ($page = 1; $page <= (int) $pagination['totalPages']; $page++): ?>
+                    <?php
+                    $query = http_build_query([
+                        'name' => $filters['name'],
+                        'category' => $filters['categoryId'],
+                        'page' => $page,
+                    ]);
+                    ?>
+
+                    <a
+                        href="/loja?<?= $this->escapeHtmlAttr($query) ?>"
+                        style="
+                            min-width: 42px;
+                            padding: 10px 14px;
+                            border-radius: 10px;
+                            text-align: center;
+                            text-decoration: none;
+                            font-weight: 600;
+                            border: 1px solid <?= $page === (int) $pagination['page'] ? '#f59e0b' : '#d1d5db' ?>;
+                            background: <?= $page === (int) $pagination['page'] ? '#f59e0b' : '#fff' ?>;
+                            color: <?= $page === (int) $pagination['page'] ? '#111827' : '#374151' ?>;
+                        "
+                    >
+                        <?= $page ?>
+                    </a>
+                <?php endfor; ?>
+            </div>
+        <?php endif; ?>
+    <?php endif; ?>
+</div>

@@ -40,9 +40,37 @@ class ProductService
         return $this->productRepository->findFilteredPaginated($name, $category, $page, $perPage);
     }
 
+    /**
+     * @return array{
+     *      items: list<Product>,
+     *      total: int,
+     *      page: int,
+     *      perPage: int,
+     *      totalPages: int
+     * }
+     */
+    public function getStoreProductsPaginated(
+        string $name = '',
+        ?int $categoryId = null,
+        int $page = 1,
+        int $perPage = 12
+    ): array {
+        return $this->productRepository->findStorePaginated(
+            $name,
+            $categoryId,
+            $page,
+            $perPage
+        );
+    }
+
     public function findById(int $id): ?Product
     {
         return $this->productRepository->findActiveById($id);
+    }
+
+    public function findStoreById(int $id): ?Product
+    {
+        return $this->productRepository->findStoreActiveById($id);
     }
 
     public function createEmpty(): Product

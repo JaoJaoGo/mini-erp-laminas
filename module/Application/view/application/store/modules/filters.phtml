@@ -1,0 +1,114 @@
+<?php
+
+declare(strict_types=1);
+
+/** @var array{name:string, categoryId:?int} $filters */
+$filters = $this->filters ?? [
+    'name' => '',
+    'categoryId' => null,
+];
+
+/** @var list<array{id:int,name:string,total:int}> $categories */
+$categories = $this->categories ?? [];
+?>
+
+<div 
+    style="background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+        position: sticky;
+        top: 24px;
+    "
+>
+    <h2 style="margin: 0 0 20px; font-size: 22px; color: #111827;">
+        Filtros
+    </h2>
+
+    <form method="get" action="/loja">
+        <div style="margin-bottom: 20px;">
+            <label for="name"
+                style="
+                    display: block;
+                    margin-bottom: 8px;
+                    font-size: 14px;
+                    font-weight: 600;
+                    color: #374151;
+                "
+            >
+                Buscar produto
+            </label>
+
+            <input
+                type="text"
+                name="name"
+                id="name"
+                value="<?= $this->escapeHtmlAttr($filters['name']) ?>"
+                placeholder="Ex: notebook, mouse..."
+                style="
+                    width: 100%;
+                    padding: 12px 14px;
+                    border: 1px solid #d1d5db;
+                    border-radius: 10px;
+                    font-size: 14px;
+                    box-sizing: border-box;
+                "
+            >
+        </div>
+
+        <div style="margin-bottom: 24px;">
+            <p style="margin: 0 0 12px; font-size: 14px; font-weight: 600; color: #374151;">
+                Categorias
+            </p>
+
+            <div style="display: flex; flex-direction: column; gap: 10px; max-height: 320px; overflow-y: auto;">
+                <label style="display: flex; align-items: center; gap: 10px; color: #111827; font-size: 14px;">
+                    <input type="radio" name="category" value="<?= $filters['categoryId'] === null ? 'checked' : '' ?>">
+                    <span>Todas as categorias</span>
+                </label>
+
+                <?php foreach ($categories as $category): ?>
+                    <label style="
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        gap: 10px;
+                        color: #111827;
+                        font-size: 14px;
+                    ">
+                        <span style="display: flex; align-items: center; gap: 10px;">
+                            <input
+                                type="radio"
+                                name="category"
+                                value="<?= (int) $category['id'] ?>"
+                                <?= $filters['categoryId'] === (int) $category['id'] ? 'checked' : '' ?>
+                            >
+                            <span><?= $this->escapeHtml($category['name']) ?></span>
+                        </span>
+
+                        <span style="color: #6b7280; font-size: 12px;">
+                            <?= (int) $category['total'] ?>
+                        </span>
+                    </label>
+                <?php endforeach; ?>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <button
+                type="submit"
+                style="padding: 12px; border: 0; border-radius: 10px; background: #f59e0b; color: #111827; font-weight: 700; cursor: pointer;"
+            >
+                Filtrar
+            </button>
+
+            <a
+                href="/loja"
+                style="padding: 12px; border-radius: 10px; background: #f3f4f6; color: #111827; font-weight: 600; text-align: center; text-decoration: none; box-sizing: border-box;"
+            >
+                Limpar
+            </a>
+        </div>
+    </form>
+</div>

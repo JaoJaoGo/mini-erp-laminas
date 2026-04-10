@@ -60,6 +60,30 @@ class CategoryRepository extends EntityRepository
         ];
     }
 
+    /**
+     * @return list<array{id:int,name:string,total:int}>
+     */
+    public function findStoreCategoriesWithProductCount(): array
+    {
+        $rows = $this->createQueryBuilder('c')
+            ->select('c.id AS id, c.name AS name, COUNT(DISTINCT p.id) AS total')
+            ->innerJoin('c.products', 'p', Join::WITH, 'p.deletedAt IS NULL AND p.isActive = true')
+            ->andWhere('c.deletedAt IS NULL')
+            ->groupBy('c.id')
+            ->orderBy('c.name', 'ASC')
+            ->getQuery()
+            ->getArrayResult();
+
+        return array_map(
+            static fn (array $row): array => [
+                'id' => (int) $row['id'],
+                'name' => (string) $row['name'],
+                'total' => (int) $row['total'],
+            ],
+            $rows
+        );
+    }
+
     public function findActiveById(int $id): ?Category
     {
         $category = $this->createQueryBuilder('c')

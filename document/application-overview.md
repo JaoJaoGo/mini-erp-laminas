@@ -10,6 +10,7 @@ O Mini ERP Laminas é um projeto de estudo construído com Laminas MVC e Doctrin
 - Dashboard com informação do usuário autenticado.
 - **CRUD de categorias** com **soft delete** e **paginação**.
 - **CRUD de produtos** com **soft delete**, **paginação** e upload de imagens.
+- **Loja pública** com listagem de produtos, filtros por nome/categoria e visualização de produto.
 - Filtragem por nome e categoria nas listagens com paginação.
 - Controle de acesso básico via sessão.
 - Validação de formatos de imagem (JPG, PNG, WEBP).
@@ -36,6 +37,7 @@ O Mini ERP Laminas é um projeto de estudo construído com Laminas MVC e Doctrin
 - `HomeController` — Exibe dashboard e usuário autenticado.
 - `CategoryController` — Lista, cria, edita e exclui categorias com **paginação**.
 - `ProductController` — Lista, cria, edita e exclui produtos com **paginação**.
+- `StoreController` — Exibe a loja pública, com filtros e visualização de produto.
 
 ### Serviço
 
@@ -60,6 +62,7 @@ O Mini ERP Laminas é um projeto de estudo construído com Laminas MVC e Doctrin
 
 - `CategoryResponse` — Manipulação de respostas para operações com categorias.
 - `ProductResponse` — Manipulação de respostas para operações com produtos.
+- `StoreResponse` — Manipulação de respostas para as páginas da loja pública.
 
 ### Entidades
 
@@ -83,8 +86,10 @@ O Mini ERP Laminas é um projeto de estudo construído com Laminas MVC e Doctrin
 | `/products/create` | GET/POST | `ProductController::createAction` | Cria um produto |
 | `/products/:id/edit` | GET/POST | `ProductController::editAction` | Edita produto existente |
 | `/products/:id/delete` | GET | `ProductController::deleteAction` | **Exclui produto (soft delete)** |
+| `/loja` | GET | `StoreController::indexAction` | Lista pública de produtos com filtros |
+| `/loja/:id` | GET | `StoreController::viewAction` | Visualiza produto na loja pública |
 
-> Observação: a rota `application` existe na configuração, mas a navegação principal usa `home`, `categories` e `products`.
+> Observação: a rota `application` existe na configuração, mas a navegação principal usa `home`, `categories`, `products` e `loja`.
 
 ## Fluxo de autenticação
 

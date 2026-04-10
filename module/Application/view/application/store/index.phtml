@@ -1,0 +1,62 @@
+<?php
+
+declare (strict_types=1);
+
+/** @var \Application\Entity\User|null $user */
+$user = $this->user ?? null;
+
+/** @var list<\Application\Entity\Product> $products */
+$products = $this->products ?? [];
+
+/** @var list<array{id:int,name:string,total>int}> $categories */
+$categories = $this->categories ?? [];
+
+/** @var array{name:string, categoryId:?int} $filters */
+$filters = $this->filters ?? [
+    'name' => '',
+    'categoryId' => null,
+];
+
+/** @var array{total:int,page:int,perPage:int,totalPages:int} $pagination */
+$pagination = $this->pagination ?? [
+    'total' => 0,
+    'page' => 1,
+    'perPage' => 12,
+    'totalPages' => 1,
+];
+
+echo $this->partial('layout/header', [
+    'user' => $user,
+]);
+?>
+
+<section style="max-width: 1440px; margin: 32px auto; padding: 0 24px;">
+    <div style="margin-bottom: 24px;">
+        <h1 style="margin: 0 0 8px; font-size: 32px; color: #111827; font-weight: 700;">
+            Loja Mini ERP
+        </h1>
+
+        <p style="margin: 0; color: #6b7280; font-size: 16px;">
+            Explore nossos produtos em uma vitrine pública.
+        </p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 24px; align-items: start;">
+        <aside>
+            <?= $this->partial('application/store/modules/filters', [
+                'filters' => $filters,
+                'categories' => $categories,
+            ]) ?>
+        </aside>
+
+        <div>
+            <?= $this->partial('application/store/modules/products', [
+                'products' => $products,
+                'pagination' => $pagination,
+                'filters' => $filters,
+            ]) ?>
+        </div>
+    </div>
+</section>
+
+<?php echo $this->partial('layout/footer'); ?>

@@ -9,9 +9,11 @@ use Application\Controller\Factory\AuthControllerFactory;
 use Application\Controller\Factory\HomeControllerFactory;
 use Application\Controller\Factory\CategoryControllerFactory;
 use Application\Controller\Factory\ProductControllerFactory;
+use Application\Controller\Factory\StoreControllerFactory;
 use Application\Controller\HomeController;
 use Application\Controller\CategoryController;
 use Application\Controller\ProductController;
+use Application\Controller\StoreController;
 use Application\Form\LoginForm;
 use Application\Form\RegisterForm;
 use Application\Form\CategoryForm;
@@ -34,8 +36,10 @@ use Application\Repository\Factory\CategoryRepositoryFactory;
 use Application\Repository\Factory\ProductRepositoryFactory;
 use Application\Response\CategoryResponse;
 use Application\Response\ProductResponse;
+use Application\Response\StoreResponse;
 use Application\Response\Factory\CategoryResponseFactory;
 use Application\Response\Factory\ProductResponseFactory;
+use Application\Response\Factory\StoreResponseFactory;
 use Laminas\Router\Http\Literal;
 use Laminas\Router\Http\Segment;
 use Laminas\ServiceManager\Factory\InvokableFactory;
@@ -70,6 +74,32 @@ return [
                     'defaults' => [
                         'controller' => AuthController::class,
                         'action' => 'logout',
+                    ],
+                ],
+            ],
+
+            'store' => [
+                'type' => Literal::class,
+                'options' => [
+                    'route' => '/loja',
+                    'defaults' => [
+                        'controller' => StoreController::class,
+                        'action' => 'index',
+                    ],
+                ],
+                'may_terminate' => true,
+                'child_routes' => [
+                    'view' => [
+                        'type' => Segment::class,
+                        'options' => [
+                            'route' => '/:id',
+                            'defaults' => [
+                                'action' => 'view',
+                            ],
+                            'constraints' => [
+                                'id' => '[1-9][0-9]*'
+                            ],
+                        ],
                     ],
                 ],
             ],
@@ -234,6 +264,7 @@ return [
             AuthController::class => AuthControllerFactory::class,
             CategoryController::class => CategoryControllerFactory::class,
             ProductController::class => ProductControllerFactory::class,
+            StoreController::class => StoreControllerFactory::class,
         ],
     ],
 
@@ -253,6 +284,7 @@ return [
             RegisterForm::class => InvokableFactory::class,
             ProductForm::class => InvokableFactory::class,
             CategoryForm::class => InvokableFactory::class,
+            StoreResponse::class => StoreResponseFactory::class,
         ],
     ],
 
@@ -278,6 +310,8 @@ return [
             'layout/chart/pie-chart' => __DIR__ . '/../view/layout/chart/pie-chart.phtml',
             'application/auth/login' => __DIR__ . '/../view/application/auth/login.phtml',
             'application/auth/register' => __DIR__ . '/../view/application/auth/register.phtml',
+            'application/store/index' => __DIR__ . '/../view/application/store/index.phtml',
+            'application/store/view' => __DIR__ . '/../view/application/store/view.phtml',
             'application/home/home' => __DIR__ . '/../view/application/home/home.phtml',
             'application/category/index' => __DIR__ . '/../view/application/category/index.phtml',
             'application/category/form' => __DIR__ . '/../view/application/category/form.phtml',
